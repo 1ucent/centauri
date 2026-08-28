@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centauri - Maintenance</title>
+    
+    <link id="favicon" rel="icon" type="image/png" href="https://ucf96d554140dc749e6e78a89dda.dl.dropboxusercontent.com/cd/0/inline/DHDmWudrl3KoFJfrXY1FEWkYaNzCFQZU-mds9G7IVfFXybz0EkH155DROOxWGb9y9g-ja506RfG7FWFibshBi1GPgBE71rdaiDB6EXO6SGWUmfLNEuEQ34LLDeZYYP-inoDv9YlzrC9x8PrI5gQp-555/file#">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@400;500&display=swap');
+        
+        body {
+            font-family: 'Darker Grotesque', sans-serif;
+            background: #ffffff;
+            color: #111111;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-6 text-center select-none">
+
+    <div class="flex flex-col items-center w-full max-w-4xl mx-auto space-y-8">
+        
+        <div class="space-y-4">
+            <h1 class="text-4xl md:text-[3.5rem] font-normal tracking-tight leading-tight text-neutral-900">
+                Centauri is currently undergoing maintenance.
+            </h1>
+            <p class="text-3xl md:text-[2.75rem] font-normal text-neutral-900 leading-tight">
+                Please try again later.
+            </p>
+        </div>
+
+        <div class="pt-8 pb-4 flex items-center justify-center">
+            <img src="https://ucdd08db6334003484c6c5d87a35.dl.dropboxusercontent.com/cd/0/inline/DHANGs6xk-gBXZTUmwA51Z_qm52QB01S5qCePpGm-p5zpxWDaDMNB8qIns5yZXFBToWE6rhUnOYNUWRusUhPZdmJ8gRamep7yStXrHmsq2L9seMblsjPsZERM7nX5N8zyoANGw2DMrOrMaxJO2Ryi_E3/file#" 
+                 alt="Centauri Logo" 
+                 class="h-12 md:h-16 object-contain">
+        </div>
+
+    </div>
+
+    <script>
+        // Uses a color filter to dynamically turn the PNG favicon white in dark mode
+        const favicon = document.getElementById('favicon');
+        const originalHref = favicon.href;
+
+        function applyFaviconFilter() {
+            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (!isDarkMode) {
+                // Restore original black PNG for light mode
+                favicon.href = originalHref;
+                return;
+            }
+
+            const img = new Image();
+            img.crossOrigin = "anonymous"; 
+            img.src = originalHref;
+            
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                
+                // Apply the exact color filter requested
+                ctx.filter = 'invert(100%)';
+                ctx.drawImage(img, 0, 0);
+                
+                try {
+                    // Update the favicon with the filtered output
+                    favicon.href = canvas.toDataURL('image/png');
+                } catch (e) {
+                    console.warn("CORS prevented applying the color filter to the favicon.", e);
+                }
+            };
+        }
+
+        // Listen for system theme changes and run on load
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyFaviconFilter);
+        applyFaviconFilter();
+    </script>
+</body>
+</html>
