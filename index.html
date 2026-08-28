@@ -28,9 +28,9 @@
             <h1 class="text-4xl md:text-[3.5rem] font-normal tracking-tight leading-tight text-neutral-900">
                 Coming to Maryland 9/8/2026
             </h1>
-            <p class="text-3xl md:text-[2.75rem] font-normal text-neutral-900 leading-tight">
-                Stay tuned!
-            </p>
+            <div id="countdown" class="text-3xl md:text-[2.75rem] font-normal text-neutral-900 leading-tight">
+                <!-- Countdown will be inserted here -->
+            </div>
         </div>
 
         <div class="pt-8 pb-4 flex items-center justify-center">
@@ -42,6 +42,31 @@
     </div>
 
     <script>
+        function updateCountdown() {
+            const targetDate = new Date('2026-09-08T00:00:00').getTime();
+            const now = new Date().getTime();
+            const difference = targetDate - now;
+
+            if (difference > 0) {
+                const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+                const countdownText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+                document.getElementById('countdown').textContent = countdownText;
+            } else {
+                document.getElementById('countdown').textContent = 'The day has arrived!';
+                clearInterval(countdownInterval);
+            }
+        }
+
+        // Update immediately
+        updateCountdown();
+        
+        // Update every second
+        const countdownInterval = setInterval(updateCountdown, 1000);
+
         // Uses a color filter to dynamically turn the PNG favicon white in dark mode
         const favicon = document.getElementById('favicon');
         const originalHref = favicon.href;
