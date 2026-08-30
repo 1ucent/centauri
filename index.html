@@ -1,141 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Centauri</title>
-    
-    <link id="favicon" rel="icon" type="image/png" href="https://github.com/1ucent/centauri/blob/main/assets/favicon.png?raw=true">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@400;500&display=swap');
-        
-        body {
-            font-family: 'Darker Grotesque', sans-serif;
-            background: #ffffff;
-            color: #111111;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        @keyframes countdownUpdate {
-            0% { opacity: 0.35; transform: translateY(0.2em); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
-        .countdown-update {
-            animation: countdownUpdate 0.45s ease-out;
-        }
-
-        .why-link {
-            color: #737373;
-            text-decoration: underline;
-            text-underline-offset: 0.2em;
-            transition: color 0.2s ease;
-        }
-
-        .why-link:hover,
-        .why-link:focus-visible {
-            color: #111111;
-        }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Centauri</title>
+  <style>
+    html,body{height:100%;margin:0}
+    body{display:flex;align-items:center;justify-content:center;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Darker Grotesque",sans-serif;background:#fff;color:#111}
+    h1{font-weight:400;font-size:1.25rem;margin:0;padding:1rem;text-align:center}
+  </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-6 text-center select-none">
-
-    <div class="flex flex-col items-center w-full max-w-4xl mx-auto space-y-8">
-        
-        <div class="space-y-4">
-            <h1 class="text-4xl md:text-[3.5rem] font-normal tracking-tight leading-tight text-neutral-900">
-                Coming soon
-            </h1>
-            <div id="countdown" class="text-3xl md:text-[2.75rem] font-normal text-neutral-900 leading-tight">
-                <!-- Countdown will be inserted here -->
-            </div>
-        </div>
-
-        <div class="pt-8 pb-4 flex items-center justify-center">
-            <img src="https://github.com/1ucent/centauri/blob/main/assets/banner.png?raw=true" 
-                 alt="Centauri" 
-                 class="h-12 md:h-16 object-contain">
-        </div>
-
-    </div>
-
-    <a class="why-link fixed bottom-6 text-sm" href="why.html" target="_blank" rel="noopener">
-        Why am I seeing this?
-    </a>
-
-    <script>
-        const countdown = document.getElementById('countdown');
-
-        function updateCountdown() {
-            const targetDate = new Date('2026-09-08T00:00:00').getTime();
-            const now = new Date().getTime();
-            const difference = targetDate - now;
-
-            if (difference > 0) {
-                const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-                const countdownText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-                countdown.textContent = countdownText;
-                countdown.classList.remove('countdown-update');
-                void countdown.offsetWidth;
-                countdown.classList.add('countdown-update');
-            } else {
-                countdown.textContent = 'The day has arrived!';
-                clearInterval(countdownInterval);
-            }
-        }
-
-        // Update immediately
-        updateCountdown();
-        
-        // Update every second
-        const countdownInterval = setInterval(updateCountdown, 1000);
-
-        // Uses a color filter to dynamically turn the PNG favicon white in dark mode
-        const favicon = document.getElementById('favicon');
-        const originalHref = favicon.href;
-
-        function applyFaviconFilter() {
-            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            
-            if (!isDarkMode) {
-                // Restore original black PNG for light mode
-                favicon.href = originalHref;
-                return;
-            }
-
-            const img = new Image();
-            img.crossOrigin = "anonymous"; 
-            img.src = originalHref;
-            
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                
-                // Apply the exact color filter requested
-                ctx.filter = 'invert(100%)';
-                ctx.drawImage(img, 0, 0);
-                
-                try {
-                    // Update the favicon with the filtered output
-                    favicon.href = canvas.toDataURL('image/png');
-                } catch (e) {
-                    console.warn("CORS prevented applying the color filter to the favicon.", e);
-                }
-            };
-        }
-
-        // Listen for system theme changes and run on load
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyFaviconFilter);
-        applyFaviconFilter();
-    </script>
+<body>
+  <h1>This domain will be home to Centauri</h1>
 </body>
 </html>
