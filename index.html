@@ -3,52 +3,790 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Centauri</title>
-    
-    <!-- Local favicon path -->
-    <link id="favicon" rel="icon" type="image/png" href="assets/favicon.png">
-    
+    <title>centauri</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font: Darker Grotesque -->
+    <link href="https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@400;500;700&display=swap');
+        body { 
+            font-family: 'Darker Grotesque', sans-serif; 
+        }
         
-        body {
-            font-family: 'Darker Grotesque', sans-serif;
-            background: #ffffff;
-            color: #111111;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #334155; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #475569; }
+        
+        .main-scrollbar::-webkit-scrollbar { width: 8px; }
+        .main-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .main-scrollbar::-webkit-scrollbar-thumb { background-color: #334155; }
+        
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(5px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* Startup Screen Animations */
+        .startup-fade-out {
+            animation: fadeOut 0.8s ease-in-out forwards;
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; visibility: hidden; }
+        }
+
+        /* SVG drawing animation */
+        .hello__svg path {
+            stroke-dasharray: 2000;
+            stroke-dashoffset: 2000;
+            animation: drawHello 3s ease forwards;
+        }
+
+        @keyframes drawHello {
+            to { stroke-dashoffset: 0; }
+        }
+
+        .pulse-text {
+            animation: pulseOpacity 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseOpacity {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
         }
     </style>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0f172a',
+                        cardbg: '#1e293b',
+                    }
+                }
+            }
+        };
+    </script>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-6 text-center select-none">
 
-    <div class="flex flex-col items-center w-full max-w-4xl mx-auto space-y-8">
-        
-        <div class="space-y-6">
-            <h1 class="text-4xl md:text-[3.5rem] font-normal tracking-tight leading-tight text-neutral-900">
-                Coming to Maryland.
-            </h1>
-            
-            <div class="py-4">
-                <span class="text-5xl md:text-7xl font-bold tracking-wider uppercase text-red-600">
-                    Delayed to launch before 9/11/26
-                </span>
-            </div>
+<body class="bg-gray-950 text-gray-300 h-screen flex flex-col overflow-hidden selection:bg-gray-800 lowercase">
 
-            <p class="text-3xl md:text-[2.75rem] font-normal text-neutral-900 leading-tight">
-               We are experiencing difficulties! 
-            </p>
+    <!-- External Audio for standard click sounds -->
+    <audio id="hoverSoundElement" src="assets/click.mp3" preload="auto"></audio>
+
+    <div id="countdownScreen" class="fixed inset-0 bg-gray-950 z-[80] flex flex-col items-center justify-center transition-opacity duration-1000">
+        <div class="flex flex-col items-center">
+            <h1 id="countdownTimer" class="text-5xl md:text-7xl font-black text-white tracking-widest font-mono mb-3">--:--:--</h1>
+            <p id="countdownLabel" class="text-gray-500 text-sm font-bold tracking-[0.3em] uppercase pulse-text">syncing network time</p>
         </div>
-
-        <div class="pt-8 pb-4 flex items-center justify-center">
-            <!-- Local banner path -->
-            <img src="assets/banner.png" 
-                 alt="Centauri Logo" 
-                 class="h-12 md:h-16 object-contain">
-        </div>
-
     </div>
+
+    <div id="startupScreen" class="fixed inset-0 bg-black z-[70] flex flex-col items-center justify-center transition-opacity duration-800 cursor-pointer" onclick="enterApp()">
+        <div class="w-full max-w-2xl px-8 flex justify-center items-center flex-grow">
+            <!-- The provided SVG Hello Sign -->
+            <svg class="hello__svg w-full h-auto" viewBox="0 0 1230.94 414.57">
+                <path d="M-293.58-104.62S-103.61-205.49-60-366.25c9.13-32.45,9-58.31,0-74-10.72-18.82-49.69-33.21-75.55,31.94-27.82,70.11-52.22,377.24-44.11,322.48s34-176.24,99.89-183.19c37.66-4,49.55,23.58,52.83,47.92a117.06,117.06,0,0,1-3,45.32c-7.17,27.28-20.47,97.67,33.51,96.86,66.93-1,131.91-53.89,159.55-84.49,31.1-36.17,31.1-70.64,19.27-90.25-16.74-29.92-69.47-33-92.79,16.73C62.78-179.86,98.7-93.8,159-81.63S302.7-99.55,393.3-269.92c29.86-58.16,52.85-114.71,46.14-150.08-7.44-39.21-59.74-54.5-92.87-8.7-47,65-61.78,266.62-34.74,308.53S416.62-58,481.52-130.31s133.2-188.56,146.54-256.23c14-71.15-56.94-94.64-88.4-47.32C500.53-375,467.58-229.49,503.3-127a73.73,73.73,0,0,0,23.43,33.67c25.49,20.23,55.1,16,77.46,6.32a111.25,111.25,0,0,0,30.44-19.87c37.73-34.23,29-36.71,64.58-127.53C724-284.3,785-298.63,821-259.13a71,71,0,0,1,13.69,22.56c17.68,46,6.81,80-6.81,107.89-12,24.62-34.56,42.72-61.45,47.91-23.06,4.45-48.37-.35-66.48-24.27a78.88,78.88,0,0,1-12.66-25.8c-14.75-51,4.14-88.76,11-101.41,6.18-11.39,37.26-69.61,103.42-42.24,55.71,23.05,100.66-23.31,100.66-23.31" transform="translate(311.08 476.02)" style="fill:none;stroke:#fff;stroke-linecap:round;stroke-miterlimit:10;stroke-width:35px" />
+            </svg>
+        </div>
+        <div id="disclaimerText" class="px-8 text-center text-xs text-gray-600 max-w-3xl mb-8 hidden fade-in leading-relaxed"></div>
+        <div id="clickToEnterPrompt" class="mb-12 opacity-0 transition-opacity duration-1000 pulse-text text-gray-400 font-semibold tracking-widest uppercase text-sm">
+            click to enter
+        </div>
+    </div>
+
+    <div id="appLoader" class="fixed inset-0 bg-black z-50 hidden items-center justify-center transition-opacity duration-500">
+        <!-- Replace the PASTE_YOUR_BASE64_HERE text below with the full string from your base64.txt file -->
+        <img id="loadingGif" src="data:image/gif;base64,PASTE_YOUR_BASE64_HERE" alt="loading..." class="w-64 h-64 object-contain">
+        <div id="loaderPercentage" class="absolute bottom-8 left-8 text-white text-4xl font-black tracking-widest font-mono">0%</div>
+    </div>
+
+    <div id="settingsModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[45] hidden flex items-center justify-center fade-in">
+        <div class="bg-gray-900 p-6 border border-gray-800 max-w-sm w-full relative">
+            <button onclick="toggleSettings(false)" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <h2 class="text-xl font-bold text-white mb-6 tracking-tight">settings</h2>
+            
+            <div class="space-y-5">
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-400 text-sm font-medium">auto-format titles</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggleAI" class="sr-only peer" checked onchange="saveSettings()">
+                        <div class="w-10 h-5 bg-gray-800 peer-focus:outline-none peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:h-4 after:w-4 after:transition-all peer-checked:bg-gray-200"></div>
+                    </label>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-400 text-sm font-medium">interface sounds</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggleSound" class="sr-only peer" checked onchange="saveSettings()">
+                        <div class="w-10 h-5 bg-gray-800 peer-focus:outline-none peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:h-4 after:w-4 after:transition-all peer-checked:bg-gray-200"></div>
+                    </label>
+                </div>
+
+                <div class="pt-5 border-t border-gray-800 mt-2">
+                    <button onclick="resetApp()" class="w-full py-2.5 bg-gray-950 hover:bg-gray-800 text-red-500 text-sm font-medium transition-colors border border-gray-800">
+                        reset data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="gameModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-40 hidden flex flex-col fade-in">
+        <div class="flex justify-between items-center p-4 bg-gray-950 border-b border-gray-800 text-white">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-gray-900 border border-gray-800 flex items-center justify-center">
+                    <i class="fa-solid fa-play text-xs text-gray-400"></i>
+                </div>
+                <h2 id="modalTitle" class="text-lg font-semibold tracking-tight">game title</h2>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="copyGameLink()" class="text-gray-500 hover:text-white transition-colors text-sm" title="copy link">
+                    <i class="fa-solid fa-link"></i>
+                </button>
+                <button onclick="closeGame()" class="text-gray-500 hover:text-white transition-colors text-lg ml-2" title="close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        </div>
+        <div class="flex-grow w-full relative bg-black">
+            <iframe id="gameIframe" class="absolute inset-0 w-full h-full border-0" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <header class="bg-gray-900 border-b border-gray-800 z-30 shrink-0">
+        <div class="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <!-- Topbar Banner Logo -->
+                <div class="h-8 flex items-center">
+                    <img src="assets/banner.png" alt="centauri" class="h-full object-contain" onerror="this.style.display='none'; document.getElementById('fallbackTextLogo').style.display='block';">
+                    <!-- Fallback text if banner image is missing -->
+                    <h1 id="fallbackTextLogo" class="hidden text-xl font-bold text-white tracking-tight leading-none">centauri</h1>
+                </div>
+                <!-- Beta Badge -->
+                <span class="ml-1 bg-gray-800 border border-gray-700 px-1.5 py-0.5 text-[10px] font-bold text-gray-300 tracking-wider">beta 1</span>
+            </div>
+            
+            <div class="flex items-center gap-4 w-full sm:w-auto">
+                <!-- Local Time Display -->
+                <div id="localTimeDisplay" class="text-gray-400 text-sm font-semibold tracking-wider hidden sm:block">
+                    --:--
+                </div>
+                
+                <div class="relative w-full sm:w-72 lg:w-80">
+                    <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-500 text-sm"></i>
+                    <input type="text" id="searchInput" placeholder="search library..." 
+                           class="w-full pl-9 pr-4 py-2 bg-gray-950 border border-gray-800 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-gray-600 transition-all">
+                </div>
+                <button onclick="toggleSettings(true)" class="w-9 h-9 bg-gray-950 border border-gray-800 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 transition-colors shrink-0">
+                    <i class="fa-solid fa-sliders text-sm"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-gray-950 border-t border-gray-800">
+            <div class="px-6 py-2.5 flex gap-2 overflow-x-auto custom-scrollbar" id="folderList">
+                <!-- Topbar folders populated via JS -->
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 overflow-y-auto main-scrollbar bg-gray-950 p-6 md:p-8" id="mainContent">
+        <div class="mb-6 flex items-baseline gap-3">
+            <h2 id="currentCategoryTitle" class="text-2xl font-bold text-white tracking-tight">overview</h2>
+            <span id="gameCountBadge" class="text-xs font-semibold text-gray-500 tracking-wider hidden">...</span>
+        </div>
+
+        <div id="gameContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-5">
+            <!-- Content populated via JS -->
+        </div>
+    </main>
+
+    <script>
+        const state = {
+            games: [],
+            topLevelFolders: [],
+            currentFolder: null,
+            searchQuery: '',
+            settings: {
+                aiRenamerEnabled: true,
+                hoverSoundsEnabled: true
+            },
+            appStarted: false
+        };
+
+        // --- LOCAL TIME CLOCK ---
+        function updateTime() {
+            const timeEl = document.getElementById('localTimeDisplay');
+            if (timeEl) {
+                const now = new Date();
+                let hours = now.getHours();
+                let minutes = now.getMinutes();
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            const strTime = hours + ':' + minutes + ' ' + ampm;
+            timeEl.textContent = strTime;
+        }
+    }
+    
+    // Start local clock
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    // --- FETCH DISCLAIMER ---
+    fetch('assets/disclaimer.txt')
+        .then(function(response) {
+            if (!response.ok) throw new Error('No disclaimer found');
+            return response.text();
+        })
+        .then(function(text) {
+            const disclaimerEl = document.getElementById('disclaimerText');
+            if (disclaimerEl && text.trim()) {
+                disclaimerEl.textContent = text;
+                disclaimerEl.classList.remove('hidden');
+            }
+        })
+        .catch(function(err) {
+            // Silently ignore if the disclaimer file does not exist
+        });
+
+    function showClickPrompt() {
+        const prompt = document.getElementById('clickToEnterPrompt');
+        if (prompt) {
+            prompt.classList.remove('opacity-0');
+        }
+    }
+
+    const targetLaunchDate = new Date('2026-10-08T12:00:00-04:00').getTime(); // 12:00 PM EDT
+    let networkTimeOffset = 0;
+    let countdownTimerId = null;
+
+    async function initializeCountdown() {
+        try {
+            // Fetch current time from an independent time server to prevent local clock spoofing
+            const res = await fetch('https://worldtimeapi.org/api/timezone/America/New_York');
+            const data = await res.json();
+            const serverTime = new Date(data.datetime).getTime();
+            networkTimeOffset = serverTime - Date.now();
+            document.getElementById('countdownLabel').classList.remove('pulse-text');
+            document.getElementById('countdownLabel').innerHTML = 'centauri beta 1 is releasing shortly! read the disclaimer <a href="assets/disclaimer.txt" target="_blank" class="underline hover:text-white transition-colors cursor-pointer">here</a>';
+        } catch (err) {
+            console.warn('Network time sync failed, using local device time.');
+            document.getElementById('countdownLabel').classList.remove('pulse-text');
+            document.getElementById('countdownLabel').innerHTML = 'centauri beta 1 is releasing shortly! read the disclaimer <a href="assets/disclaimer.txt" target="_blank" class="underline hover:text-white transition-colors cursor-pointer">here</a>';
+        }
+        runCountdownTick();
+        countdownTimerId = setInterval(runCountdownTick, 1000);
+    }
+
+    function runCountdownTick() {
+        const now = Date.now() + networkTimeOffset;
+        const distance = targetLaunchDate - now;
+
+        const countdownScreen = document.getElementById('countdownScreen');
+        const timerEl = document.getElementById('countdownTimer');
+
+        // Unlock when time is reached
+        if (distance <= 0) {
+            clearInterval(countdownTimerId);
+            if (countdownScreen) {
+                countdownScreen.classList.add('opacity-0');
+                setTimeout(function() { countdownScreen.remove(); }, 1000);
+            }
+            // Show the "click to enter" prompt 5 seconds AFTER the countdown finishes
+            setTimeout(showClickPrompt, 5000);
+            return;
+        }
+
+        // Calculate time parts
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        let display = '';
+        if (days > 0) display += days + 'd ';
+        display += String(hours).padStart(2, '0') + ':' + 
+                   String(minutes).padStart(2, '0') + ':' + 
+                   String(seconds).padStart(2, '0');
+
+        if (timerEl) timerEl.textContent = display;
+    }
+
+    // Start countdown sync on load
+    initializeCountdown();
+
+    function enterApp() {
+        if (state.appStarted) return;
+            state.appStarted = true;
+            
+            // Audio context requires user interaction to start playing in modern browsers
+            initAudio();
+            
+            const startupScreen = document.getElementById('startupScreen');
+            const appLoader = document.getElementById('appLoader');
+            
+            startupScreen.classList.add('startup-fade-out');
+            
+            // Wait for fade out to complete before removing from DOM and starting loader
+            setTimeout(() => {
+                startupScreen.remove();
+                appLoader.classList.remove('hidden');
+                appLoader.classList.add('flex');
+                
+                // Initialize settings and fetch data
+                loadSettings();
+                fetchGitHubCatalog();
+            }, 800);
+        }
+
+        // --- SETTINGS LOGIC ---
+        function loadSettings() {
+            const saved = localStorage.getItem('centauri_settings');
+            if (saved) {
+                state.settings = JSON.parse(saved);
+                document.getElementById('toggleAI').checked = state.settings.aiRenamerEnabled;
+                document.getElementById('toggleSound').checked = state.settings.hoverSoundsEnabled;
+            }
+        }
+
+        function saveSettings() {
+            state.settings.aiRenamerEnabled = document.getElementById('toggleAI').checked;
+            state.settings.hoverSoundsEnabled = document.getElementById('toggleSound').checked;
+            localStorage.setItem('centauri_settings', JSON.stringify(state.settings));
+        }
+
+        function toggleSettings(show) {
+            const modal = document.getElementById('settingsModal');
+            if (show) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function resetApp() {
+            localStorage.removeItem('centauri_settings');
+            location.reload();
+        }
+
+        // --- AUDIO SYSTEM ---
+        function initAudio() {
+            if (!state.settings.hoverSoundsEnabled) return;
+            const audioEl = document.getElementById('hoverSoundElement');
+            if (audioEl && audioEl.paused) {
+                audioEl.play().then(function() {
+                    audioEl.pause();
+                    audioEl.currentTime = 0;
+                }).catch(function(e) {
+                    console.log("Audio init blocked by browser.", e);
+                }); 
+            }
+        }
+
+        let lastHoverTime = 0;
+        function playHoverSound() {
+            if (!state.settings.hoverSoundsEnabled) return;
+            const now = Date.now();
+            if (now - lastHoverTime > 50) {
+                const audioEl = document.getElementById('hoverSoundElement');
+                if (audioEl) {
+                    audioEl.currentTime = 0; 
+                    audioEl.volume = 0.2; 
+                    audioEl.play().catch(function(e) {}); 
+                }
+                lastHoverTime = now;
+            }
+        }
+
+        document.body.addEventListener('mouseenter', function(e) {
+            if (e.target.closest('.hover-sound')) playHoverSound();
+        }, true);
+
+        // --- CATEGORY ICONS ---
+        const categoryIcons = {
+            'action': 'fa-crosshairs', 'arcade': 'fa-ghost', 'puzzle': 'fa-puzzle-piece',
+            'racing': 'fa-flag-checkered', 'sports': 'fa-futbol', 'rpg': 'fa-dragon',
+            'strategy': 'fa-chess-knight', 'platformer': 'fa-person-running',
+            'shooter': 'fa-gun', 'simulation': 'fa-plane', 'unsorted': 'fa-box-open'
+        };
+
+        function getCategoryIcon(folderName) {
+            const lowerName = folderName.toLowerCase();
+            for (const [key, icon] of Object.entries(categoryIcons)) {
+                if (lowerName.includes(key)) return icon;
+            }
+            return 'fa-folder';
+        }
+
+        function getGameBannerHtml(title) {
+            const colors = ['bg-slate-800', 'bg-zinc-800', 'bg-neutral-800', 'bg-stone-800', 'bg-gray-800'];
+            const charCode = title.charCodeAt(0) || 0;
+            const bgColor = colors[charCode % colors.length];
+            
+            // The image src uses a transparent pixel initially to avoid broken image icons before load.
+            // The onerror handler falls back to assets/error.png
+            return '<div class="absolute inset-0 w-full h-full ' + bgColor + ' flex items-center justify-center">' +
+                   '<i class="fallback-icon fa-solid fa-gamepad text-white/10 text-5xl"></i>' +
+                   '<img data-title="' + title + '" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null; this.src=\'assets/error.png\'; this.classList.add(\'opacity-100\'); this.previousElementSibling.style.display=\'none\';" class="lazy-cover absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500" onload="if(this.src.includes(\'http\') || this.src.includes(\'error.png\')) { this.classList.add(\'opacity-100\'); this.previousElementSibling.style.display=\'none\'; }">' +
+                   '</div>';
+        }
+
+        function observeThumbnails() {
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if(entry.isIntersecting) {
+                        const img = entry.target;
+                        const title = img.dataset.title;
+                        if(title && !img.dataset.loaded) {
+                            img.dataset.loaded = 'true';
+                            fetch('https://itunes.apple.com/search?term=' + encodeURIComponent(title + " game") + '&entity=software&limit=1')
+                            .then(function(r) { return r.json(); })
+                            .then(function(data) {
+                                if(data.results && data.results.length > 0 && data.results[0].artworkUrl512) {
+                                    img.src = data.results[0].artworkUrl512;
+                                } else {
+                                    // Manually trigger onerror if no results
+                                    img.dispatchEvent(new Event('error'));
+                                }
+                            }).catch(function() {
+                                img.dispatchEvent(new Event('error'));
+                            });
+                            observer.unobserve(img);
+                        }
+                    }
+                });
+            }, { rootMargin: '100px' });
+
+            document.querySelectorAll('.lazy-cover').forEach(function(img) { observer.observe(img); });
+        }
+
+        async function fetchGitHubCatalog() {
+            const percentageEl = document.getElementById('loaderPercentage');
+            const appLoader = document.getElementById('appLoader');
+            let progress = 0;
+
+            const progressInterval = setInterval(function() {
+                if (progress < 95) {
+                    progress += Math.random() * 8;
+                    if (progress > 95) progress = 95;
+                    if (percentageEl) percentageEl.textContent = Math.floor(progress) + "%";
+                }
+            }, 100);
+
+            try {
+                const response = await fetch('https://api.github.com/repos/1ucent/centauri/git/trees/main?recursive=1');
+                if (!response.ok) throw new Error("GitHub API returned status " + response.status);
+                
+                const data = await response.json();
+                const targetPrefix = 'assets/ugs/';
+                const foldersSet = new Set();
+                let parsedGames = [];
+                
+                if (!data.tree) throw new Error("Invalid repository tree payload received.");
+
+                data.tree.forEach(function(node) {
+                    const pathLower = node.path.toLowerCase();
+                    if (pathLower.startsWith(targetPrefix) && pathLower.endsWith('.html')) {
+                        const relativePath = node.path.substring(targetPrefix.length);
+                        const pathParts = relativePath.split('/');
+                        const fileName = pathParts.pop();
+                        const folderPath = pathParts.join('/');
+                        
+                        if (pathParts.length > 0) foldersSet.add(pathParts[0]);
+                        
+                        const rawTitle = fileName.replace('.html', '').replace(/[-_]/g, ' ');
+                        const url = 'https://1ucent.github.io/centauri/' + node.path;
+                        const cleanTitle = rawTitle.charAt(0).toUpperCase() + rawTitle.slice(1);
+
+                        parsedGames.push({
+                            id: node.sha,
+                            title: cleanTitle,
+                            url: url,
+                            banner: getGameBannerHtml(cleanTitle),
+                            folderPath: folderPath
+                        });
+                    }
+                });
+
+                state.games = parsedGames;
+                state.topLevelFolders = Array.from(foldersSet).sort();
+
+                clearInterval(progressInterval);
+                if (percentageEl) percentageEl.textContent = "100%";
+                
+                setTimeout(function() {
+                    if (appLoader) {
+                        appLoader.style.opacity = '0';
+                        setTimeout(function() { 
+                            appLoader.classList.remove('flex');
+                            appLoader.classList.add('hidden'); 
+                        }, 500);
+                    }
+                }, 500);
+
+                document.getElementById('gameCountBadge').textContent = state.games.length + " items";
+                document.getElementById('gameCountBadge').classList.remove('hidden');
+                
+                renderTopbar();
+                renderContent();
+
+                if(state.settings.aiRenamerEnabled) {
+                    smartEnhanceUnsortedNames(parsedGames).then(function(updatedGames) {
+                        state.games = updatedGames;
+                        // Silently update the specific titles in the DOM avoiding full re-render flash
+                        updatedGames.forEach(function(game) {
+                            const titleEl = document.getElementById('game-title-' + game.id);
+                            if (titleEl) titleEl.textContent = game.title.toLowerCase(); // keep it lowercase
+                        });
+                    }).catch(function(err) { console.log("AI skipped:", err); });
+                }
+
+            } catch (error) {
+                console.error("Fetch Error:", error);
+                clearInterval(progressInterval);
+                if (percentageEl) {
+                    percentageEl.textContent = "ERR";
+                    percentageEl.classList.add("text-red-500");
+                }
+                setTimeout(function() {
+                    if (appLoader) {
+                        appLoader.style.opacity = '0';
+                        setTimeout(function() { 
+                            appLoader.classList.remove('flex');
+                            appLoader.classList.add('hidden'); 
+                        }, 500);
+                    }
+                }, 1500);
+
+                document.getElementById('gameContainer').innerHTML = 
+                    '<div class="col-span-full flex flex-col items-center justify-center h-64 text-center">' +
+                    '<div class="w-12 h-12 bg-gray-900 text-red-500 flex items-center justify-center mb-4 text-xl border border-gray-800">' +
+                    '<i class="fa-solid fa-triangle-exclamation"></i></div>' +
+                    '<h3 class="text-lg font-semibold text-white">Connection Failed</h3>' +
+                    '<p class="text-gray-500 text-sm mt-1">' + error.message + '</p></div>';
+            }
+        }
+
+        function renderTopbar() {
+            const list = document.getElementById('folderList');
+            let html = '';
+
+            state.topLevelFolders.forEach(function(folder) {
+                const isActive = state.currentFolder === folder;
+                const activeClasses = isActive 
+                    ? 'bg-gray-200 text-gray-900 border-transparent' 
+                    : 'bg-gray-900 text-gray-400 border-gray-800 hover:bg-gray-800 hover:text-white';
+                const icon = getCategoryIcon(folder);
+                const displayName = folder.replace(/[-_]/g, ' ');
+
+                html += '<button onclick="selectFolder(\'' + folder + '\')" class="hover-sound flex-shrink-0 px-4 py-1.5 text-sm font-semibold tracking-wider transition-colors flex items-center gap-2 border ' + activeClasses + '">' +
+                        '<i class="fa-solid ' + icon + '"></i><span>' + displayName.toLowerCase() + '</span></button>';
+            });
+
+            list.innerHTML = html;
+        }
+
+        function selectFolder(folderPath) {
+            state.currentFolder = folderPath;
+            state.searchQuery = '';
+            document.getElementById('searchInput').value = '';
+            
+            const cleanTitle = folderPath.split('/').pop().replace(/[-_]/g, ' ');
+            document.getElementById('currentCategoryTitle').textContent = cleanTitle.toLowerCase();
+            
+            renderTopbar();
+            renderContent();
+            document.getElementById('mainContent').scrollTop = 0;
+        }
+
+        function getAdHtml() {
+            return '<div class="bg-gray-900 border border-gray-800 overflow-hidden flex flex-col justify-center items-center p-4 fade-in text-center relative group aspect-square">' +
+                   '<span class="absolute top-2 right-2 bg-gray-800 text-gray-500 text-[10px] font-bold px-1.5 py-0.5 tracking-wider">ad</span>' +
+                   '<i class="fa-solid fa-rectangle-ad text-3xl text-gray-700 mb-2"></i>' +
+                   '<h3 class="font-semibold text-gray-600 text-sm tracking-wide">sponsor</h3>' +
+                   '</div>';
+        }
+
+        function renderContent() {
+            const container = document.getElementById('gameContainer');
+            
+            if (!state.currentFolder && !state.searchQuery) {
+                document.getElementById('currentCategoryTitle').textContent = 'library';
+                container.innerHTML = 
+                    '<div class="col-span-full flex flex-col items-center justify-center h-[50vh] text-center fade-in">' +
+                    '<div class="w-16 h-16 bg-gray-900 flex items-center justify-center mb-4 border border-gray-800">' +
+                    '<i class="fa-solid fa-folder-open text-2xl text-gray-600"></i></div>' +
+                    '<h2 class="text-2xl font-bold text-white mb-2">select a category</h2>' +
+                    '<p class="text-gray-500 text-base max-w-sm">browse the navigation bar above or use the search field to find specific items.</p></div>';
+                return;
+            }
+
+            let filteredGames = state.games;
+            let subfolders = new Set();
+
+            if (state.searchQuery) {
+                const q = state.searchQuery.toLowerCase();
+                filteredGames = state.games.filter(function(g) { return g.title.toLowerCase().includes(q); });
+            } else if (state.currentFolder) {
+                const isUnsorted = state.currentFolder.toLowerCase().includes('unsorted');
+
+                if (isUnsorted) {
+                    filteredGames = state.games.filter(function(g) { return g.folderPath.startsWith(state.currentFolder); });
+                } else {
+                    filteredGames = state.games.filter(function(g) { return g.folderPath === state.currentFolder; });
+                    
+                    state.games.forEach(function(g) {
+                        if (g.folderPath.startsWith(state.currentFolder + '/') && g.folderPath !== state.currentFolder) {
+                            const subPath = g.folderPath.substring(state.currentFolder.length + 1);
+                            const nextFolder = subPath.split('/')[0];
+                            if (nextFolder) subfolders.add(state.currentFolder + '/' + nextFolder);
+                        }
+                    });
+                }
+            }
+
+            let html = '';
+            let itemCount = 0;
+
+            subfolders.forEach(function(subPath) {
+                const displayName = subPath.split('/').pop().replace(/[-_]/g, ' ');
+                const icon = getCategoryIcon(displayName);
+                
+                html += '<button onclick="selectFolder(\'' + subPath + '\')" class="hover-sound bg-gray-900 p-6 border border-gray-800 hover:border-gray-600 transition-colors flex flex-col items-center justify-center gap-3 fade-in group aspect-square">' +
+                        '<div class="w-12 h-12 bg-gray-950 flex items-center justify-center border border-gray-800 group-hover:bg-gray-800 transition-colors">' +
+                        '<i class="fa-solid ' + icon + ' text-xl text-gray-600 group-hover:text-white transition-colors"></i></div>' +
+                        '<span class="font-semibold text-gray-300 text-base text-center">' + displayName.toLowerCase() + '</span></button>';
+                itemCount++;
+                if (itemCount % 5 === 0) html += getAdHtml();
+            });
+
+            filteredGames.forEach(function(game) {
+                html += '<div onclick="openGame(\'' + game.url + '\', \'' + game.title.replace(/'/g, "\\'") + '\')" class="hover-sound game-card border border-gray-800 overflow-hidden cursor-pointer fade-in relative group aspect-square">' +
+                        game.banner +
+                        '<div class="absolute bottom-0 left-0 w-full p-3 z-20 flex flex-col justify-end text-white bg-gradient-to-t from-black/90 to-transparent">' +
+                        '<h3 id="game-title-' + game.id + '" class="font-bold text-base leading-tight line-clamp-2">' + game.title.toLowerCase() + '</h3>' +
+                        '</div></div>';
+                itemCount++;
+                if (itemCount % 5 === 0) html += getAdHtml();
+            });
+
+            if (itemCount === 0) {
+                container.innerHTML = 
+                    '<div class="col-span-full flex flex-col items-center justify-center h-[40vh] text-center fade-in">' +
+                    '<div class="w-12 h-12 bg-gray-900 text-gray-600 flex items-center justify-center mb-4 text-xl border border-gray-800">' +
+                    '<i class="fa-solid fa-magnifying-glass"></i></div>' +
+                    '<h3 class="text-lg font-semibold text-white">no results found</h3>' +
+                    '<p class="text-gray-500 text-base mt-1">try a different category or search term.</p></div>';
+            } else {
+                container.innerHTML = html;
+                observeThumbnails();
+            }
+        }
+
+        function openGame(url, title) {
+            document.getElementById('modalTitle').textContent = title.toLowerCase();
+            document.getElementById('gameIframe').src = url;
+            const modal = document.getElementById('gameModal');
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeGame() {
+            document.getElementById('gameIframe').src = '';
+            document.getElementById('gameModal').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        function copyGameLink() {
+            const url = document.getElementById('gameIframe').src;
+            if(!url) return;
+            
+            const tempInput = document.createElement('input');
+            tempInput.value = url;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            
+            const btn = event.currentTarget;
+            const icon = btn.querySelector('i');
+            icon.classList.remove('fa-link');
+            icon.classList.add('fa-check', 'text-white');
+            setTimeout(function() {
+                icon.classList.remove('fa-check', 'text-white');
+                icon.classList.add('fa-link');
+            }, 2000);
+        }
+
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            state.searchQuery = e.target.value;
+            if(state.searchQuery) {
+                document.getElementById('currentCategoryTitle').textContent = 'search results';
+                state.currentFolder = null; 
+                renderTopbar(); 
+            } else {
+                document.getElementById('currentCategoryTitle').textContent = 'overview';
+            }
+            renderContent();
+        });
+
+        async function smartEnhanceUnsortedNames(gamesList) {
+            const unsortedGames = gamesList.filter(function(g) { return g.folderPath.toLowerCase().includes('unsorted'); });
+            if (unsortedGames.length === 0) return gamesList;
+
+            const rawNames = unsortedGames.map(function(g) { return g.title; });
+            const prompt = "You are a metadata formatter. Fix these raw filenames into clean software titles. Return ONLY a valid JSON array of strings in the exact same order. Do not include markdown fences.\nExamples:\n\"super-mario-bros_v2\" -> \"Super Mario Bros.\"\n\"pac_man_dx\" -> \"Pac-Man DX\"\nNames to fix:\n" + JSON.stringify(rawNames);
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(function() { controller.abort(); }, 8000);
+
+                const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    signal: controller.signal,
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: { temperature: 0.1, responseMimeType: "application/json" }
+                    })
+                });
+
+                clearTimeout(timeoutId);
+
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0) {
+                    let cleanedText = result.candidates[0].content.parts[0].text.trim();
+                    if (cleanedText.startsWith('```json')) cleanedText = cleanedText.substring(7);
+                    if (cleanedText.startsWith('```')) cleanedText = cleanedText.substring(3);
+                    if (cleanedText.endsWith('```')) cleanedText = cleanedText.substring(0, cleanedText.length - 3);
+                    
+                    const cleanedNames = JSON.parse(cleanedText.trim());
+                    
+                    if(Array.isArray(cleanedNames) && cleanedNames.length === unsortedGames.length) {
+                        unsortedGames.forEach(function(game, index) {
+                            game.title = cleanedNames[index];
+                            // Note: we don't recreate the banner HTML here to avoid breaking the image observer
+                        });
+                        return gamesList;
+                    }
+                }
+            } catch (err) {
+                console.warn("Title Formatting skipped:", err);
+            }
+            return gamesList;
+        }
+
+    </script>
 </body>
 </html>
-
