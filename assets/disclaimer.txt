@@ -1,6 +1,1 @@
- DISCLAIMER
-Centauri is currently in a beta phase.
-Known issues: 
-App icons can be inaccurate a lot of times
-Database is unfinished
-Animation on startup is missing segments
+centauri is currently in a beta phase, and errors are completely guaranteed.
