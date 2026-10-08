@@ -1029,11 +1029,47 @@
         function openGame(url, title) {
             playPressSound();
             fadeOutGlobalMusic();
-            document.getElementById('modalTitle').textContent = title.toLowerCase();
-            document.getElementById('gameModal').classList.remove('hidden');
-            document.body.classList.add('overflow-hidden');
             
-            document.getElementById('gameIframe').src = url;
+            // Attempt to open the game in an about:blank cloaked tab
+            const win = window.open('about:blank', '_blank');
+            
+            if (win) {
+                // Stealth Mode: Disguise the tab as Google
+                win.document.title = "Google"; 
+                
+                const favicon = win.document.createElement('link');
+                favicon.rel = 'icon';
+                favicon.href = 'https://www.google.com/favicon.ico';
+                win.document.head.appendChild(favicon);
+                
+                win.document.body.style.margin = '0';
+                win.document.body.style.overflow = 'hidden';
+                win.document.body.style.backgroundColor = '#000';
+                
+                const iframe = win.document.createElement('iframe');
+                iframe.src = url;
+                iframe.style.width = '100vw';
+                iframe.style.height = '100vh';
+                iframe.style.border = 'none';
+                iframe.allowFullscreen = true;
+                
+                win.document.body.appendChild(iframe);
+                
+                // Monitor the tab: resume global music when they close the game
+                const checkInterval = setInterval(() => {
+                    if (win.closed) {
+                        clearInterval(checkInterval);
+                        fadeInGlobalMusic();
+                    }
+                }, 500);
+            } else {
+                // Fallback: If pop-ups are blocked, use the internal modal
+                document.getElementById('modalTitle').textContent = title.toLowerCase();
+                document.getElementById('gameModal').classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+                
+                document.getElementById('gameIframe').src = url;
+            }
         }
 
         function closeGame() {
