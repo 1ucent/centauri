@@ -18,12 +18,12 @@
         
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #334155; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #475569; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
         
         .main-scrollbar::-webkit-scrollbar { width: 8px; }
         .main-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .main-scrollbar::-webkit-scrollbar-thumb { background-color: #334155; }
+        .main-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; }
         
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { 
@@ -76,63 +76,63 @@
     </script>
 </head>
 
-<body class="bg-gray-950 text-gray-300 h-screen flex flex-col overflow-hidden selection:bg-gray-800 lowercase">
+<body class="bg-white text-gray-700 h-screen flex flex-col overflow-hidden selection:bg-gray-200 lowercase">
 
     <!-- External Audio for standard click sounds -->
     <audio id="hoverSoundElement" src="assets/click.mp3" preload="auto"></audio>
 
-    <div id="countdownScreen" class="fixed inset-0 bg-gray-950 z-[80] flex flex-col items-center justify-center transition-opacity duration-1000">
+    <div id="countdownScreen" class="fixed inset-0 bg-white z-[80] flex flex-col items-center justify-center transition-opacity duration-1000">
         <div class="flex flex-col items-center">
-            <h1 id="countdownTimer" class="text-5xl md:text-7xl font-black text-white tracking-widest font-mono mb-3">--:--:--</h1>
-            <p id="countdownLabel" class="text-gray-500 text-sm font-bold tracking-[0.3em] uppercase pulse-text">syncing network time</p>
+            <h1 id="countdownTimer" class="text-5xl md:text-7xl font-black text-gray-900 tracking-widest font-mono mb-3">--:--:--</h1>
+            <p id="countdownLabel" class="text-gray-400 text-sm font-bold tracking-[0.3em] uppercase pulse-text">syncing network time</p>
         </div>
     </div>
 
-    <div id="startupScreen" class="fixed inset-0 bg-black z-[70] flex flex-col items-center justify-center transition-opacity duration-800 cursor-pointer" onclick="enterApp()">
+    <div id="startupScreen" class="fixed inset-0 bg-gray-50 z-[70] flex flex-col items-center justify-center transition-opacity duration-800 cursor-pointer" onclick="enterApp()">
         <div class="w-full max-w-2xl px-8 flex justify-center items-center flex-grow">
             <!-- The provided SVG Hello Sign -->
             <svg class="hello__svg w-full h-auto" viewBox="0 0 1230.94 414.57">
-                <path d="M-293.58-104.62S-103.61-205.49-60-366.25c9.13-32.45,9-58.31,0-74-10.72-18.82-49.69-33.21-75.55,31.94-27.82,70.11-52.22,377.24-44.11,322.48s34-176.24,99.89-183.19c37.66-4,49.55,23.58,52.83,47.92a117.06,117.06,0,0,1-3,45.32c-7.17,27.28-20.47,97.67,33.51,96.86,66.93-1,131.91-53.89,159.55-84.49,31.1-36.17,31.1-70.64,19.27-90.25-16.74-29.92-69.47-33-92.79,16.73C62.78-179.86,98.7-93.8,159-81.63S302.7-99.55,393.3-269.92c29.86-58.16,52.85-114.71,46.14-150.08-7.44-39.21-59.74-54.5-92.87-8.7-47,65-61.78,266.62-34.74,308.53S416.62-58,481.52-130.31s133.2-188.56,146.54-256.23c14-71.15-56.94-94.64-88.4-47.32C500.53-375,467.58-229.49,503.3-127a73.73,73.73,0,0,0,23.43,33.67c25.49,20.23,55.1,16,77.46,6.32a111.25,111.25,0,0,0,30.44-19.87c37.73-34.23,29-36.71,64.58-127.53C724-284.3,785-298.63,821-259.13a71,71,0,0,1,13.69,22.56c17.68,46,6.81,80-6.81,107.89-12,24.62-34.56,42.72-61.45,47.91-23.06,4.45-48.37-.35-66.48-24.27a78.88,78.88,0,0,1-12.66-25.8c-14.75-51,4.14-88.76,11-101.41,6.18-11.39,37.26-69.61,103.42-42.24,55.71,23.05,100.66-23.31,100.66-23.31" transform="translate(311.08 476.02)" style="fill:none;stroke:#fff;stroke-linecap:round;stroke-miterlimit:10;stroke-width:35px" />
+                <path d="M-293.58-104.62S-103.61-205.49-60-366.25c9.13-32.45,9-58.31,0-74-10.72-18.82-49.69-33.21-75.55,31.94-27.82,70.11-52.22,377.24-44.11,322.48s34-176.24,99.89-183.19c37.66-4,49.55[...]
             </svg>
         </div>
-        <div id="disclaimerText" class="px-8 text-center text-xs text-gray-600 max-w-3xl mb-8 hidden fade-in leading-relaxed"></div>
-        <div id="clickToEnterPrompt" class="mb-12 opacity-0 transition-opacity duration-1000 pulse-text text-gray-400 font-semibold tracking-widest uppercase text-sm">
+        <div id="disclaimerText" class="px-8 text-center text-xs text-gray-500 max-w-3xl mb-8 hidden fade-in leading-relaxed"></div>
+        <div id="clickToEnterPrompt" class="mb-12 opacity-0 transition-opacity duration-1000 pulse-text text-gray-500 font-semibold tracking-widest uppercase text-sm">
             click to enter
         </div>
     </div>
 
-    <div id="appLoader" class="fixed inset-0 bg-black z-50 hidden items-center justify-center transition-opacity duration-500">
+    <div id="appLoader" class="fixed inset-0 bg-gray-50 z-50 hidden items-center justify-center transition-opacity duration-500">
         <!-- Replace the PASTE_YOUR_BASE64_HERE text below with the full string from your base64.txt file -->
         <img id="loadingGif" src="data:image/gif;base64,PASTE_YOUR_BASE64_HERE" alt="loading..." class="w-64 h-64 object-contain">
-        <div id="loaderPercentage" class="absolute bottom-8 left-8 text-white text-4xl font-black tracking-widest font-mono">0%</div>
+        <div id="loaderPercentage" class="absolute bottom-8 left-8 text-gray-900 text-4xl font-black tracking-widest font-mono">0%</div>
     </div>
 
-    <div id="settingsModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[45] hidden flex items-center justify-center fade-in">
-        <div class="bg-gray-900 p-6 border border-gray-800 max-w-sm w-full relative">
-            <button onclick="toggleSettings(false)" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
+    <div id="settingsModal" class="fixed inset-0 bg-black/20 backdrop-blur-sm z-[45] hidden flex items-center justify-center fade-in">
+        <div class="bg-white p-6 border border-gray-300 max-w-sm w-full relative">
+            <button onclick="toggleSettings(false)" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition-colors">
                 <i class="fa-solid fa-xmark text-xl"></i>
             </button>
-            <h2 class="text-xl font-bold text-white mb-6 tracking-tight">settings</h2>
+            <h2 class="text-xl font-bold text-gray-900 mb-6 tracking-tight">settings</h2>
             
             <div class="space-y-5">
                 <div class="flex items-center justify-between">
-                    <span class="text-gray-400 text-sm font-medium">auto-format titles</span>
+                    <span class="text-gray-600 text-sm font-medium">auto-format titles</span>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="toggleAI" class="sr-only peer" checked onchange="saveSettings()">
-                        <div class="w-10 h-5 bg-gray-800 peer-focus:outline-none peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:h-4 after:w-4 after:transition-all peer-checked:bg-gray-200"></div>
+                        <div class="w-10 h-5 bg-gray-200 peer-focus:outline-none peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
                     </label>
                 </div>
                 
                 <div class="flex items-center justify-between">
-                    <span class="text-gray-400 text-sm font-medium">interface sounds</span>
+                    <span class="text-gray-600 text-sm font-medium">interface sounds</span>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="toggleSound" class="sr-only peer" checked onchange="saveSettings()">
-                        <div class="w-10 h-5 bg-gray-800 peer-focus:outline-none peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-300 after:border-gray-300 after:border after:h-4 after:w-4 after:transition-all peer-checked:bg-gray-200"></div>
+                        <div class="w-10 h-5 bg-gray-200 peer-focus:outline-none peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
                     </label>
                 </div>
 
-                <div class="pt-5 border-t border-gray-800 mt-2">
-                    <button onclick="resetApp()" class="w-full py-2.5 bg-gray-950 hover:bg-gray-800 text-red-500 text-sm font-medium transition-colors border border-gray-800">
+                <div class="pt-5 border-t border-gray-300 mt-2">
+                    <button onclick="resetApp()" class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-red-600 text-sm font-medium transition-colors border border-gray-300">
                         reset data
                     </button>
                 </div>
@@ -140,68 +140,68 @@
         </div>
     </div>
 
-    <div id="gameModal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-40 hidden flex flex-col fade-in">
-        <div class="flex justify-between items-center p-4 bg-gray-950 border-b border-gray-800 text-white">
+    <div id="gameModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-40 hidden flex flex-col fade-in">
+        <div class="flex justify-between items-center p-4 bg-gray-100 border-b border-gray-300 text-gray-900">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-gray-900 border border-gray-800 flex items-center justify-center">
-                    <i class="fa-solid fa-play text-xs text-gray-400"></i>
+                <div class="w-8 h-8 bg-white border border-gray-300 flex items-center justify-center">
+                    <i class="fa-solid fa-play text-xs text-gray-600"></i>
                 </div>
                 <h2 id="modalTitle" class="text-lg font-semibold tracking-tight">game title</h2>
             </div>
             <div class="flex gap-4">
-                <button onclick="copyGameLink()" class="text-gray-500 hover:text-white transition-colors text-sm" title="copy link">
+                <button onclick="copyGameLink()" class="text-gray-600 hover:text-gray-900 transition-colors text-sm" title="copy link">
                     <i class="fa-solid fa-link"></i>
                 </button>
-                <button onclick="closeGame()" class="text-gray-500 hover:text-white transition-colors text-lg ml-2" title="close">
+                <button onclick="closeGame()" class="text-gray-600 hover:text-gray-900 transition-colors text-lg ml-2" title="close">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
         </div>
-        <div class="flex-grow w-full relative bg-black">
+        <div class="flex-grow w-full relative bg-white">
             <iframe id="gameIframe" class="absolute inset-0 w-full h-full border-0" allowfullscreen></iframe>
         </div>
     </div>
 
-    <header class="bg-gray-900 border-b border-gray-800 z-30 shrink-0">
+    <header class="bg-gray-100 border-b border-gray-300 z-30 shrink-0">
         <div class="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="flex items-center gap-3">
                 <!-- Topbar Banner Logo -->
                 <div class="h-8 flex items-center">
                     <img src="assets/banner.png" alt="centauri" class="h-full object-contain" onerror="this.style.display='none'; document.getElementById('fallbackTextLogo').style.display='block';">
                     <!-- Fallback text if banner image is missing -->
-                    <h1 id="fallbackTextLogo" class="hidden text-xl font-bold text-white tracking-tight leading-none">centauri</h1>
+                    <h1 id="fallbackTextLogo" class="hidden text-xl font-bold text-gray-900 tracking-tight leading-none">centauri</h1>
                 </div>
                 <!-- Beta Badge -->
-                <span class="ml-1 bg-gray-800 border border-gray-700 px-1.5 py-0.5 text-[10px] font-bold text-gray-300 tracking-wider">beta 1</span>
+                <span class="ml-1 bg-gray-200 border border-gray-400 px-1.5 py-0.5 text-[10px] font-bold text-gray-700 tracking-wider">beta 1</span>
             </div>
             
             <div class="flex items-center gap-4 w-full sm:w-auto">
                 <!-- Local Time Display -->
-                <div id="localTimeDisplay" class="text-gray-400 text-sm font-semibold tracking-wider hidden sm:block">
+                <div id="localTimeDisplay" class="text-gray-600 text-sm font-semibold tracking-wider hidden sm:block">
                     --:--
                 </div>
                 
                 <div class="relative w-full sm:w-72 lg:w-80">
                     <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-500 text-sm"></i>
                     <input type="text" id="searchInput" placeholder="search library..." 
-                           class="w-full pl-9 pr-4 py-2 bg-gray-950 border border-gray-800 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-gray-600 transition-all">
+                           class="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:border-gray-500 transition-all">
                 </div>
-                <button onclick="toggleSettings(true)" class="w-9 h-9 bg-gray-950 border border-gray-800 flex items-center justify-center text-gray-400 hover:text-white hover:bg-gray-800 transition-colors shrink-0">
+                <button onclick="toggleSettings(true)" class="w-9 h-9 bg-white border border-gray-300 flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-gray-200 transition-colors">
                     <i class="fa-solid fa-sliders text-sm"></i>
                 </button>
             </div>
         </div>
 
-        <div class="bg-gray-950 border-t border-gray-800">
+        <div class="bg-white border-t border-gray-300">
             <div class="px-6 py-2.5 flex gap-2 overflow-x-auto custom-scrollbar" id="folderList">
                 <!-- Topbar folders populated via JS -->
             </div>
         </div>
     </header>
 
-    <main class="flex-1 overflow-y-auto main-scrollbar bg-gray-950 p-6 md:p-8" id="mainContent">
+    <main class="flex-1 overflow-y-auto main-scrollbar bg-white p-6 md:p-8" id="mainContent">
         <div class="mb-6 flex items-baseline gap-3">
-            <h2 id="currentCategoryTitle" class="text-2xl font-bold text-white tracking-tight">overview</h2>
+            <h2 id="currentCategoryTitle" class="text-2xl font-bold text-gray-900 tracking-tight">overview</h2>
             <span id="gameCountBadge" class="text-xs font-semibold text-gray-500 tracking-wider hidden">...</span>
         </div>
 
@@ -267,7 +267,7 @@
         }
     }
 
-    const targetLaunchDate = new Date('2026-10-08T12:00:00-04:00').getTime(); // 12:00 PM EDT
+    const targetLaunchDate = new Date('2026-10-08T14:00:00-04:00').getTime(); // 2:00 PM EDT
     let networkTimeOffset = 0;
     let countdownTimerId = null;
 
@@ -279,11 +279,11 @@
             const serverTime = new Date(data.datetime).getTime();
             networkTimeOffset = serverTime - Date.now();
             document.getElementById('countdownLabel').classList.remove('pulse-text');
-            document.getElementById('countdownLabel').innerHTML = 'centauri beta 1 is releasing shortly! read the disclaimer <a href="assets/disclaimer.txt" target="_blank" class="underline hover:text-white transition-colors cursor-pointer">here</a>';
+            document.getElementById('countdownLabel').innerHTML = 'centauri beta 1 is releasing shortly! read the disclaimer <a href="assets/disclaimer.txt" target="_blank" class="underline hover:text-gray-600">here</a>';
         } catch (err) {
             console.warn('Network time sync failed, using local device time.');
             document.getElementById('countdownLabel').classList.remove('pulse-text');
-            document.getElementById('countdownLabel').innerHTML = 'centauri beta 1 is releasing shortly! read the disclaimer <a href="assets/disclaimer.txt" target="_blank" class="underline hover:text-white transition-colors cursor-pointer">here</a>';
+            document.getElementById('countdownLabel').innerHTML = 'centauri beta 1 is releasing shortly! read the disclaimer <a href="assets/disclaimer.txt" target="_blank" class="underline hover:text-gray-600">here</a>';
         }
         runCountdownTick();
         countdownTimerId = setInterval(runCountdownTick, 1000);
@@ -430,15 +430,15 @@
         }
 
         function getGameBannerHtml(title) {
-            const colors = ['bg-slate-800', 'bg-zinc-800', 'bg-neutral-800', 'bg-stone-800', 'bg-gray-800'];
+            const colors = ['bg-slate-200', 'bg-zinc-200', 'bg-neutral-200', 'bg-stone-200', 'bg-gray-200'];
             const charCode = title.charCodeAt(0) || 0;
             const bgColor = colors[charCode % colors.length];
             
             // The image src uses a transparent pixel initially to avoid broken image icons before load.
             // The onerror handler falls back to assets/error.png
             return '<div class="absolute inset-0 w-full h-full ' + bgColor + ' flex items-center justify-center">' +
-                   '<i class="fallback-icon fa-solid fa-gamepad text-white/10 text-5xl"></i>' +
-                   '<img data-title="' + title + '" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null; this.src=\'assets/error.png\'; this.classList.add(\'opacity-100\'); this.previousElementSibling.style.display=\'none\';" class="lazy-cover absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500" onload="if(this.src.includes(\'http\') || this.src.includes(\'error.png\')) { this.classList.add(\'opacity-100\'); this.previousElementSibling.style.display=\'none\'; }">' +
+                   '<i class="fallback-icon fa-solid fa-gamepad text-gray-400/20 text-5xl"></i>' +
+                   '<img data-title="' + title + '" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null; this.src=\'assets/error.png\'; this.classList.add(\'lazy-cover\');" class="lazy-cover w-full h-full object-cover" />' +
                    '</div>';
         }
 
@@ -571,10 +571,10 @@
 
                 document.getElementById('gameContainer').innerHTML = 
                     '<div class="col-span-full flex flex-col items-center justify-center h-64 text-center">' +
-                    '<div class="w-12 h-12 bg-gray-900 text-red-500 flex items-center justify-center mb-4 text-xl border border-gray-800">' +
+                    '<div class="w-12 h-12 bg-gray-200 text-red-500 flex items-center justify-center mb-4 text-xl border border-gray-300">' +
                     '<i class="fa-solid fa-triangle-exclamation"></i></div>' +
-                    '<h3 class="text-lg font-semibold text-white">Connection Failed</h3>' +
-                    '<p class="text-gray-500 text-sm mt-1">' + error.message + '</p></div>';
+                    '<h3 class="text-lg font-semibold text-gray-900">Connection Failed</h3>' +
+                    '<p class="text-gray-600 text-sm mt-1">' + error.message + '</p></div>';
             }
         }
 
@@ -585,12 +585,12 @@
             state.topLevelFolders.forEach(function(folder) {
                 const isActive = state.currentFolder === folder;
                 const activeClasses = isActive 
-                    ? 'bg-gray-200 text-gray-900 border-transparent' 
-                    : 'bg-gray-900 text-gray-400 border-gray-800 hover:bg-gray-800 hover:text-white';
+                    ? 'bg-gray-900 text-white border-transparent' 
+                    : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100 hover:text-gray-900';
                 const icon = getCategoryIcon(folder);
                 const displayName = folder.replace(/[-_]/g, ' ');
 
-                html += '<button onclick="selectFolder(\'' + folder + '\')" class="hover-sound flex-shrink-0 px-4 py-1.5 text-sm font-semibold tracking-wider transition-colors flex items-center gap-2 border ' + activeClasses + '">' +
+                html += '<button onclick="selectFolder(\'' + folder + '\')" class="hover-sound flex-shrink-0 px-4 py-1.5 text-sm font-semibold tracking-wider transition-colors flex items-center gap-2 border rounded ' + activeClasses + '">' +
                         '<i class="fa-solid ' + icon + '"></i><span>' + displayName.toLowerCase() + '</span></button>';
             });
 
@@ -611,10 +611,10 @@
         }
 
         function getAdHtml() {
-            return '<div class="bg-gray-900 border border-gray-800 overflow-hidden flex flex-col justify-center items-center p-4 fade-in text-center relative group aspect-square">' +
-                   '<span class="absolute top-2 right-2 bg-gray-800 text-gray-500 text-[10px] font-bold px-1.5 py-0.5 tracking-wider">ad</span>' +
-                   '<i class="fa-solid fa-rectangle-ad text-3xl text-gray-700 mb-2"></i>' +
-                   '<h3 class="font-semibold text-gray-600 text-sm tracking-wide">sponsor</h3>' +
+            return '<div class="bg-gray-100 border border-gray-300 overflow-hidden flex flex-col justify-center items-center p-4 fade-in text-center relative group aspect-square">' +
+                   '<span class="absolute top-2 right-2 bg-gray-200 text-gray-600 text-[10px] font-bold px-1.5 py-0.5 tracking-wider">ad</span>' +
+                   '<i class="fa-solid fa-rectangle-ad text-3xl text-gray-400 mb-2"></i>' +
+                   '<h3 class="font-semibold text-gray-500 text-sm tracking-wide">sponsor</h3>' +
                    '</div>';
         }
 
@@ -625,10 +625,10 @@
                 document.getElementById('currentCategoryTitle').textContent = 'library';
                 container.innerHTML = 
                     '<div class="col-span-full flex flex-col items-center justify-center h-[50vh] text-center fade-in">' +
-                    '<div class="w-16 h-16 bg-gray-900 flex items-center justify-center mb-4 border border-gray-800">' +
-                    '<i class="fa-solid fa-folder-open text-2xl text-gray-600"></i></div>' +
-                    '<h2 class="text-2xl font-bold text-white mb-2">select a category</h2>' +
-                    '<p class="text-gray-500 text-base max-w-sm">browse the navigation bar above or use the search field to find specific items.</p></div>';
+                    '<div class="w-16 h-16 bg-gray-200 flex items-center justify-center mb-4 border border-gray-300">' +
+                    '<i class="fa-solid fa-folder-open text-2xl text-gray-500"></i></div>' +
+                    '<h2 class="text-2xl font-bold text-gray-900 mb-2">select a category</h2>' +
+                    '<p class="text-gray-600 text-base max-w-sm">browse the navigation bar above or use the search field to find specific items.</p></div>';
                 return;
             }
 
@@ -663,18 +663,18 @@
                 const displayName = subPath.split('/').pop().replace(/[-_]/g, ' ');
                 const icon = getCategoryIcon(displayName);
                 
-                html += '<button onclick="selectFolder(\'' + subPath + '\')" class="hover-sound bg-gray-900 p-6 border border-gray-800 hover:border-gray-600 transition-colors flex flex-col items-center justify-center gap-3 fade-in group aspect-square">' +
-                        '<div class="w-12 h-12 bg-gray-950 flex items-center justify-center border border-gray-800 group-hover:bg-gray-800 transition-colors">' +
-                        '<i class="fa-solid ' + icon + ' text-xl text-gray-600 group-hover:text-white transition-colors"></i></div>' +
-                        '<span class="font-semibold text-gray-300 text-base text-center">' + displayName.toLowerCase() + '</span></button>';
+                html += '<button onclick="selectFolder(\'' + subPath + '\')" class="hover-sound bg-gray-100 p-6 border border-gray-300 hover:border-gray-500 transition-colors flex flex-col items-center justify-center group aspect-square">' +
+                        '<div class="w-12 h-12 bg-white flex items-center justify-center border border-gray-300 group-hover:bg-gray-100 transition-colors">' +
+                        '<i class="fa-solid ' + icon + ' text-xl text-gray-500 group-hover:text-gray-900 transition-colors"></i></div>' +
+                        '<span class="font-semibold text-gray-700 text-base text-center">' + displayName.toLowerCase() + '</span></button>';
                 itemCount++;
                 if (itemCount % 5 === 0) html += getAdHtml();
             });
 
             filteredGames.forEach(function(game) {
-                html += '<div onclick="openGame(\'' + game.url + '\', \'' + game.title.replace(/'/g, "\\'") + '\')" class="hover-sound game-card border border-gray-800 overflow-hidden cursor-pointer fade-in relative group aspect-square">' +
+                html += '<div onclick="openGame(\'' + game.url + '\', \'' + game.title.replace(/'/g, "\\'") + '\')" class="hover-sound game-card border border-gray-300 overflow-hidden cursor-pointer fade-in relative aspect-square group">' +
                         game.banner +
-                        '<div class="absolute bottom-0 left-0 w-full p-3 z-20 flex flex-col justify-end text-white bg-gradient-to-t from-black/90 to-transparent">' +
+                        '<div class="absolute bottom-0 left-0 w-full p-3 z-20 flex flex-col justify-end text-white bg-gradient-to-t from-black/80 to-transparent">' +
                         '<h3 id="game-title-' + game.id + '" class="font-bold text-base leading-tight line-clamp-2">' + game.title.toLowerCase() + '</h3>' +
                         '</div></div>';
                 itemCount++;
@@ -684,10 +684,10 @@
             if (itemCount === 0) {
                 container.innerHTML = 
                     '<div class="col-span-full flex flex-col items-center justify-center h-[40vh] text-center fade-in">' +
-                    '<div class="w-12 h-12 bg-gray-900 text-gray-600 flex items-center justify-center mb-4 text-xl border border-gray-800">' +
+                    '<div class="w-12 h-12 bg-gray-200 text-gray-600 flex items-center justify-center mb-4 text-xl border border-gray-300">' +
                     '<i class="fa-solid fa-magnifying-glass"></i></div>' +
-                    '<h3 class="text-lg font-semibold text-white">no results found</h3>' +
-                    '<p class="text-gray-500 text-base mt-1">try a different category or search term.</p></div>';
+                    '<h3 class="text-lg font-semibold text-gray-900">no results found</h3>' +
+                    '<p class="text-gray-600 text-base mt-1">try a different category or search term.</p></div>';
             } else {
                 container.innerHTML = html;
                 observeThumbnails();
@@ -722,9 +722,9 @@
             const btn = event.currentTarget;
             const icon = btn.querySelector('i');
             icon.classList.remove('fa-link');
-            icon.classList.add('fa-check', 'text-white');
+            icon.classList.add('fa-check', 'text-gray-900');
             setTimeout(function() {
-                icon.classList.remove('fa-check', 'text-white');
+                icon.classList.remove('fa-check', 'text-gray-900');
                 icon.classList.add('fa-link');
             }, 2000);
         }
@@ -746,7 +746,7 @@
             if (unsortedGames.length === 0) return gamesList;
 
             const rawNames = unsortedGames.map(function(g) { return g.title; });
-            const prompt = "You are a metadata formatter. Fix these raw filenames into clean software titles. Return ONLY a valid JSON array of strings in the exact same order. Do not include markdown fences.\nExamples:\n\"super-mario-bros_v2\" -> \"Super Mario Bros.\"\n\"pac_man_dx\" -> \"Pac-Man DX\"\nNames to fix:\n" + JSON.stringify(rawNames);
+            const prompt = "You are a metadata formatter. Fix these raw filenames into clean software titles. Return ONLY a valid JSON array of strings in the exact same order. Do not include markdown, no extra text. Input: " + JSON.stringify(rawNames);
 
             try {
                 const controller = new AbortController();
