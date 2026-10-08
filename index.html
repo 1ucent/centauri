@@ -12,6 +12,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <style>
+        :root {
+            --accent-bg: #111827; /* Default accent */
+        }
+        
+        .dark {
+            --accent-bg: #f9fafb; /* Lighter accent for dark mode defaults */
+        }
+
         body { 
             font-family: 'Darker Grotesque', sans-serif; 
         }
@@ -19,11 +27,13 @@
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
         
         .main-scrollbar::-webkit-scrollbar { width: 8px; }
         .main-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .main-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; }
+        .dark .main-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; }
         
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { 
@@ -42,13 +52,17 @@
 
         /* SVG drawing animation */
         .hello__svg path {
-            stroke-dasharray: 2000;
-            stroke-dashoffset: 2000;
-            animation: drawHello 3s ease forwards;
+            stroke-dasharray: 1;
+            stroke-dashoffset: 1;
+        }
+
+        .start-anim path {
+            animation: drawHello 5s ease-in-out forwards;
         }
 
         @keyframes drawHello {
-            to { stroke-dashoffset: 0; }
+            0% { stroke-dashoffset: 1; }
+            100% { stroke-dashoffset: 0; }
         }
 
         .pulse-text {
@@ -56,7 +70,7 @@
         }
 
         @keyframes pulseOpacity {
-            0%, 100% { opacity: 0.5; }
+            0%, 100% { opacity: 0.4; }
             50% { opacity: 1; }
         }
     </style>
@@ -67,8 +81,8 @@
             theme: {
                 extend: {
                     colors: {
-                        darkbg: '#0f172a',
-                        cardbg: '#1e293b',
+                        darkbg: '#0a0a0a',
+                        cardbg: '#171717',
                     }
                 }
             }
@@ -76,154 +90,376 @@
     </script>
 </head>
 
-<body class="bg-white text-gray-700 h-screen flex flex-col overflow-hidden selection:bg-gray-200 lowercase">
+<body class="bg-gray-50 dark:bg-darkbg text-gray-900 dark:text-gray-100 h-screen flex flex-col overflow-hidden selection:bg-gray-200 dark:selection:bg-gray-800 lowercase transition-colors duration-300">
 
-    <!-- External Audio for standard click sounds -->
-    <audio id="hoverSoundElement" src="assets/click.mp3" preload="auto"></audio>
+    <!-- External Audio -->
+    <audio id="hoverSoundElement" src="assets/hover.mp3" preload="auto"></audio>
+    <audio id="setupMusicElement" src="assets/setup.mp3" loop preload="auto"></audio>
+    <audio id="globalMusicElement" src="assets/music.mp3" loop preload="auto"></audio>
 
-    <div id="countdownScreen" class="fixed inset-0 bg-white z-[80] flex flex-col items-center justify-center transition-opacity duration-1000">
-        <div class="flex flex-col items-center">
-            <h1 id="countdownTimer" class="text-5xl md:text-7xl font-black text-gray-900 tracking-widest font-mono mb-3">--:--:--</h1>
-            <p id="countdownLabel" class="text-gray-400 text-sm font-bold tracking-[0.3em] uppercase pulse-text">syncing network time</p>
+    <div id="countdownScreen" class="fixed inset-0 bg-gray-50 dark:bg-darkbg z-[90] flex flex-col items-center justify-center transition-opacity duration-1000 hidden">
+        <div class="flex flex-col items-center text-center px-4">
+            <h1 id="countdownTimer" class="text-5xl md:text-7xl font-black text-gray-900 dark:text-white tracking-widest font-mono mb-3">--:--:--</h1>
+            <p id="countdownLabel" class="text-gray-500 dark:text-gray-400 text-sm font-bold tracking-[0.3em] uppercase">
+                centauri beta 1 is releasing shortly! read the disclaimer <a href="assets/disclaimer.txt" target="_blank" class="underline hover:text-black dark:hover:text-white transition-colors cursor-pointer">here</a>
+            </p>
         </div>
     </div>
 
-    <div id="startupScreen" class="fixed inset-0 bg-gray-50 z-[70] flex flex-col items-center justify-center transition-opacity duration-800 cursor-pointer" onclick="enterApp()">
+    <!-- Setup Wizard -->
+    <div id="setupWizard" class="fixed inset-0 bg-gray-50/95 dark:bg-darkbg/95 backdrop-blur-md z-[85] hidden flex-col items-center justify-center transition-opacity duration-500 fade-in">
+        <div class="w-full max-w-xl bg-white dark:bg-cardbg p-8 md:p-12 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col max-h-screen overflow-y-auto">
+            <h2 class="text-3xl font-black text-gray-900 dark:text-white mb-2 tracking-tight">setup centauri.</h2>
+            <p class="text-gray-500 dark:text-gray-400 mb-8 font-medium">configure your personal experience.</p>
+            
+            <div class="space-y-6 flex-grow">
+                <!-- Theme Toggle -->
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-gray-900 dark:text-white text-base font-bold block">appearance</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-sm">switch between light and dark mode.</span>
+                    </div>
+                    <select id="setupTheme" onchange="previewTheme(this.value)" class="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-lg block p-2.5 focus:ring-gray-300 focus:border-gray-300 outline-none font-bold">
+                        <option value="dark">dark</option>
+                        <option value="light">light</option>
+                    </select>
+                </div>
+
+                <!-- Custom Accent Color -->
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-gray-900 dark:text-white text-base font-bold block">accent color</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-sm">pick a custom highlight color.</span>
+                    </div>
+                    <input type="color" id="setupAccent" value="#f9fafb" class="w-10 h-10 rounded cursor-pointer bg-transparent border-0 p-0" oninput="previewAccent(this.value)">
+                </div>
+
+                <!-- AI Formatter -->
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-gray-900 dark:text-white text-base font-bold block">auto-format</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-sm">clean up messy file names automatically.</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="setupAI" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-300 dark:bg-gray-700 rounded-full after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:bg-green-500 transition-colors"></div>
+                    </label>
+                </div>
+
+                <!-- Interface Sounds -->
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-gray-900 dark:text-white text-base font-bold block">interface sounds</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-sm">play audio cues when interacting.</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="setupSound" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-300 dark:bg-gray-700 rounded-full after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:bg-green-500 transition-colors"></div>
+                    </label>
+                </div>
+
+                <!-- Global Music -->
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-gray-900 dark:text-white text-base font-bold block">global music</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-sm">play ambient music throughout the app.</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="setupMusic" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-300 dark:bg-gray-700 rounded-full after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:bg-green-500 transition-colors"></div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="mt-10 flex justify-end gap-3 border-t border-gray-100 dark:border-gray-800 pt-6">
+                <button onclick="finalizeSetup(true)" class="px-5 py-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-sm font-bold transition-colors">skip</button>
+                <button onclick="finalizeSetup(false)" class="px-6 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg text-sm font-bold transition-colors shadow-sm">save & continue</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="startupScreen" class="fixed inset-0 bg-white dark:bg-darkbg z-[80] flex flex-col items-center justify-center transition-opacity duration-800 cursor-pointer hidden" onclick="enterApp()">
         <div class="w-full max-w-2xl px-8 flex justify-center items-center flex-grow">
-            <!-- The provided SVG Hello Sign -->
-            <svg class="hello__svg w-full h-auto" viewBox="0 0 1230.94 414.57">
-                <path d="M-293.58-104.62S-103.61-205.49-60-366.25c9.13-32.45,9-58.31,0-74-10.72-18.82-49.69-33.21-75.55,31.94-27.82,70.11-52.22,377.24-44.11,322.48s34-176.24,99.89-183.19c37.66-4,49.55[...]
+            <!-- The Hello SVG (Path length optimized for exactly 5s) -->
+            <svg class="hello__svg w-full h-auto max-w-md stroke-gray-900 dark:stroke-white" viewBox="0 0 1230.94 414.57">
+                <path pathLength="1" d="M-293.58-104.62S-103.61-205.49-60-366.25c9.13-32.45,9-58.31,0-74-10.72-18.82-49.69-33.21-75.55,31.94-27.82,70.11-52.22,377.24-44.11,322.48s34-176.24,99.89-183.19c37.66-4,49.55,23.58,52.83,47.92a117.06,117.06,0,0,1-3,45.32c-7.17,27.28-20.47,97.67,33.51,96.86,66.93-1,131.91-53.89,159.55-84.49,31.1-36.17,31.1-70.64,19.27-90.25-16.74-29.92-69.47-33-92.79,16.73C62.78-179.86,98.7-93.8,159-81.63S302.7-99.55,393.3-269.92c29.86-58.16,52.85-114.71,46.14-150.08-7.44-39.21-59.74-54.5-92.87-8.7-47,65-61.78,266.62-34.74,308.53S416.62-58,481.52-130.31s133.2-188.56,146.54-256.23c14-71.15-56.94-94.64-88.4-47.32C500.53-375,467.58-229.49,503.3-127a73.73,73.73,0,0,0,23.43,33.67c25.49,20.23,55.1,16,77.46,6.32a111.25,111.25,0,0,0,30.44-19.87c37.73-34.23,29-36.71,64.58-127.53C724-284.3,785-298.63,821-259.13a71,71,0,0,1,13.69,22.56c17.68,46,6.81,80-6.81,107.89-12,24.62-34.56,42.72-61.45,47.91-23.06,4.45-48.37-.35-66.48-24.27a78.88,78.88,0,0,1-12.66-25.8c-14.75-51,4.14-88.76,11-101.41,6.18-11.39,37.26-69.61,103.42-42.24,55.71,23.05,100.66-23.31,100.66-23.31" transform="translate(311.08 476.02)" style="fill:none;stroke-linecap:round;stroke-miterlimit:10;stroke-width:35px" />
             </svg>
         </div>
-        <div id="disclaimerText" class="px-8 text-center text-xs text-gray-500 max-w-3xl mb-8 hidden fade-in leading-relaxed"></div>
-        <div id="clickToEnterPrompt" class="mb-12 opacity-0 transition-opacity duration-1000 pulse-text text-gray-500 font-semibold tracking-widest uppercase text-sm">
+        <div id="disclaimerText" class="px-8 text-center text-sm font-medium text-gray-500 dark:text-gray-400 max-w-3xl mb-8 hidden fade-in leading-relaxed"></div>
+        <div id="clickToEnterPrompt" class="mb-12 opacity-0 transition-opacity duration-1000 pulse-text text-gray-400 font-bold tracking-widest uppercase text-sm">
             click to enter
         </div>
     </div>
 
-    <div id="appLoader" class="fixed inset-0 bg-gray-50 z-50 hidden items-center justify-center transition-opacity duration-500">
-        <!-- Replace the PASTE_YOUR_BASE64_HERE text below with the full string from your base64.txt file -->
+    <!-- App Loader -->
+    <div id="appLoader" class="fixed inset-0 bg-gray-50 dark:bg-darkbg z-[60] hidden items-center justify-center transition-opacity duration-500">
         <img id="loadingGif" src="data:image/gif;base64,PASTE_YOUR_BASE64_HERE" alt="loading..." class="w-64 h-64 object-contain">
-        <div id="loaderPercentage" class="absolute bottom-8 left-8 text-gray-900 text-4xl font-black tracking-widest font-mono">0%</div>
+        <div id="loaderPercentage" class="absolute bottom-8 left-8 text-gray-900 dark:text-white text-4xl font-black tracking-widest font-mono">0%</div>
     </div>
 
-    <div id="settingsModal" class="fixed inset-0 bg-black/20 backdrop-blur-sm z-[45] hidden flex items-center justify-center fade-in">
-        <div class="bg-white p-6 border border-gray-300 max-w-sm w-full relative">
-            <button onclick="toggleSettings(false)" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition-colors">
-                <i class="fa-solid fa-xmark text-xl"></i>
+    <div id="settingsModal" class="fixed inset-0 bg-white/95 dark:bg-darkbg/95 backdrop-blur-sm z-[100] hidden flex-col fade-in overflow-y-auto">
+        <div class="p-8 md:p-16 max-w-3xl mx-auto w-full relative flex-grow flex flex-col justify-center">
+            <button onclick="toggleSettings(false)" class="absolute top-8 right-8 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 w-10 h-10 rounded-full flex items-center justify-center">
+                <i class="fa-solid fa-xmark text-lg"></i>
             </button>
-            <h2 class="text-xl font-bold text-gray-900 mb-6 tracking-tight">settings</h2>
+            <h2 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">settings</h2>
+            <p class="text-gray-500 dark:text-gray-400 mb-12">manage your preferences.</p>
             
-            <div class="space-y-5">
-                <div class="flex items-center justify-between">
-                    <span class="text-gray-600 text-sm font-medium">auto-format titles</span>
+            <div class="space-y-6">
+                <!-- Theme Select -->
+                <div class="flex items-center justify-between p-5 bg-gray-50 dark:bg-cardbg rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                    <div>
+                        <span class="text-gray-900 dark:text-white text-base font-bold block">appearance</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-sm">switch between light and dark mode.</span>
+                    </div>
+                    <select id="settingTheme" onchange="applyTheme(this.value); saveSettings();" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm rounded-lg block p-2 outline-none font-bold shadow-sm">
+                        <option value="dark">dark</option>
+                        <option value="light">light</option>
+                    </select>
+                </div>
+
+                <!-- Custom Accent -->
+                <div class="flex items-center justify-between p-5 bg-gray-50 dark:bg-cardbg rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                    <div>
+                        <span class="text-gray-900 dark:text-white text-base font-bold block">accent color</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-sm">pick a custom highlight color.</span>
+                    </div>
+                    <input type="color" id="settingAccent" class="w-10 h-10 rounded cursor-pointer bg-transparent border-0 p-0" oninput="previewAccent(this.value)" onchange="saveSettings()">
+                </div>
+
+                <div class="flex items-center justify-between p-5 bg-gray-50 dark:bg-cardbg rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                    <div>
+                        <span class="text-gray-900 dark:text-white text-base font-bold block">auto-format titles</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-sm">use ai to clean up raw file names.</span>
+                    </div>
                     <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="toggleAI" class="sr-only peer" checked onchange="saveSettings()">
-                        <div class="w-10 h-5 bg-gray-200 peer-focus:outline-none peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+                        <input type="checkbox" id="toggleAI" class="sr-only peer" onchange="saveSettings()">
+                        <div class="w-11 h-6 bg-gray-300 dark:bg-gray-700 rounded-full after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:bg-green-500 transition-colors"></div>
                     </label>
                 </div>
                 
-                <div class="flex items-center justify-between">
-                    <span class="text-gray-600 text-sm font-medium">interface sounds</span>
+                <div class="flex items-center justify-between p-5 bg-gray-50 dark:bg-cardbg rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                    <div>
+                        <span class="text-gray-900 dark:text-white text-base font-bold block">interface sounds</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-sm">play audio cues when hovering cards.</span>
+                    </div>
                     <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="toggleSound" class="sr-only peer" checked onchange="saveSettings()">
-                        <div class="w-10 h-5 bg-gray-200 peer-focus:outline-none peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+                        <input type="checkbox" id="toggleSound" class="sr-only peer" onchange="saveSettings()">
+                        <div class="w-11 h-6 bg-gray-300 dark:bg-gray-700 rounded-full after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:bg-green-500 transition-colors"></div>
                     </label>
                 </div>
 
-                <div class="pt-5 border-t border-gray-300 mt-2">
-                    <button onclick="resetApp()" class="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-red-600 text-sm font-medium transition-colors border border-gray-300">
-                        reset data
+                <div class="flex items-center justify-between p-5 bg-gray-50 dark:bg-cardbg rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                    <div>
+                        <span class="text-gray-900 dark:text-white text-base font-bold block">global music</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-sm">play background music globally.</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggleMusic" class="sr-only peer" onchange="saveSettings()">
+                        <div class="w-11 h-6 bg-gray-300 dark:bg-gray-700 rounded-full after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:bg-green-500 transition-colors"></div>
+                    </label>
+                </div>
+
+                <div class="pt-6 mt-4">
+                    <button onclick="resetApp()" class="px-6 py-3 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 rounded-lg text-sm font-bold transition-colors border border-red-200 dark:border-red-900/50 shadow-sm">
+                        reset all data
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="gameModal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-40 hidden flex flex-col fade-in">
-        <div class="flex justify-between items-center p-4 bg-gray-100 border-b border-gray-300 text-gray-900">
+    <div id="gameModal" class="fixed inset-0 bg-white/95 dark:bg-darkbg/95 backdrop-blur-md z-[100] hidden flex flex-col fade-in">
+        <div class="flex justify-between items-center p-4 bg-white dark:bg-cardbg border-b border-gray-200 dark:border-gray-800 shadow-sm z-10">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-white border border-gray-300 flex items-center justify-center">
-                    <i class="fa-solid fa-play text-xs text-gray-600"></i>
+                <div class="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 flex items-center justify-center shadow-inner">
+                    <i class="fa-solid fa-play text-xs text-gray-600 dark:text-gray-400"></i>
                 </div>
-                <h2 id="modalTitle" class="text-lg font-semibold tracking-tight">game title</h2>
+                <h2 id="modalTitle" class="text-lg font-bold text-gray-900 dark:text-white tracking-tight">game</h2>
             </div>
             <div class="flex gap-4">
-                <button onclick="copyGameLink()" class="text-gray-600 hover:text-gray-900 transition-colors text-sm" title="copy link">
+                <button onclick="copyGameLink()" class="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 w-8 h-8 rounded-full transition-colors text-sm flex items-center justify-center shadow-sm" title="copy link">
                     <i class="fa-solid fa-link"></i>
                 </button>
-                <button onclick="closeGame()" class="text-gray-600 hover:text-gray-900 transition-colors text-lg ml-2" title="close">
+                <button onclick="closeGame()" class="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 w-8 h-8 rounded-full transition-colors text-base flex items-center justify-center ml-2 shadow-sm" title="close">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
         </div>
-        <div class="flex-grow w-full relative bg-white">
+        <div class="flex-grow w-full relative bg-gray-50 dark:bg-black">
             <iframe id="gameIframe" class="absolute inset-0 w-full h-full border-0" allowfullscreen></iframe>
         </div>
     </div>
 
-    <header class="bg-gray-100 border-b border-gray-300 z-30 shrink-0">
+    <header class="bg-white dark:bg-cardbg border-b border-gray-200 dark:border-gray-800 z-30 shrink-0 shadow-sm">
         <div class="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="flex items-center gap-3">
                 <!-- Topbar Banner Logo -->
                 <div class="h-8 flex items-center">
                     <img src="assets/banner.png" alt="centauri" class="h-full object-contain" onerror="this.style.display='none'; document.getElementById('fallbackTextLogo').style.display='block';">
-                    <!-- Fallback text if banner image is missing -->
-                    <h1 id="fallbackTextLogo" class="hidden text-xl font-bold text-gray-900 tracking-tight leading-none">centauri</h1>
+                    <h1 id="fallbackTextLogo" class="hidden text-xl font-black text-gray-900 dark:text-white tracking-tight leading-none">centauri</h1>
                 </div>
-                <!-- Beta Badge -->
-                <span class="ml-1 bg-gray-200 border border-gray-400 px-1.5 py-0.5 text-[10px] font-bold text-gray-700 tracking-wider">beta 1</span>
+                <span class="ml-1 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md px-1.5 py-0.5 text-[10px] font-bold text-gray-600 dark:text-gray-400 tracking-wider">beta 1</span>
             </div>
             
             <div class="flex items-center gap-4 w-full sm:w-auto">
                 <!-- Local Time Display -->
-                <div id="localTimeDisplay" class="text-gray-600 text-sm font-semibold tracking-wider hidden sm:block">
-                    --:--
-                </div>
+                <div id="localTimeDisplay" class="text-gray-500 dark:text-gray-400 text-sm font-bold tracking-wider hidden sm:block">--:--</div>
                 
                 <div class="relative w-full sm:w-72 lg:w-80">
-                    <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-500 text-sm"></i>
+                    <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-400 text-sm"></i>
                     <input type="text" id="searchInput" placeholder="search library..." 
-                           class="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:border-gray-500 transition-all">
+                           class="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-darkbg border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 focus:bg-white dark:focus:bg-gray-800 transition-all shadow-inner">
                 </div>
-                <button onclick="toggleSettings(true)" class="w-9 h-9 bg-white border border-gray-300 flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-gray-200 transition-colors">
+                <button onclick="toggleSettings(true)" class="w-9 h-9 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shrink-0 shadow-sm">
                     <i class="fa-solid fa-sliders text-sm"></i>
                 </button>
             </div>
         </div>
 
-        <div class="bg-white border-t border-gray-300">
+        <div class="bg-gray-50 dark:bg-darkbg border-t border-gray-200 dark:border-gray-800">
             <div class="px-6 py-2.5 flex gap-2 overflow-x-auto custom-scrollbar" id="folderList">
-                <!-- Topbar folders populated via JS -->
+                <!-- Folders populated via JS -->
             </div>
         </div>
     </header>
 
-    <main class="flex-1 overflow-y-auto main-scrollbar bg-white p-6 md:p-8" id="mainContent">
+    <main class="flex-1 overflow-y-auto main-scrollbar bg-gray-50 dark:bg-darkbg p-6 md:p-8" id="mainContent">
         <div class="mb-6 flex items-baseline gap-3">
-            <h2 id="currentCategoryTitle" class="text-2xl font-bold text-gray-900 tracking-tight">overview</h2>
-            <span id="gameCountBadge" class="text-xs font-semibold text-gray-500 tracking-wider hidden">...</span>
+            <h2 id="currentCategoryTitle" class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">overview</h2>
+            <span id="gameCountBadge" class="text-xs font-bold text-gray-500 dark:text-gray-400 tracking-wider hidden bg-gray-200 dark:bg-gray-800 px-2 py-0.5 rounded-full">...</span>
         </div>
-
-        <div id="gameContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-5">
+        <div id="gameContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
             <!-- Content populated via JS -->
         </div>
     </main>
 
     <script>
+        const isMobileUA = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        // Only target known spoofing hardware signatures (iPad on MacIntel, Android on Linux ARM)
+        // This safely ignores Windows/Linux desktop computers that happen to have touchscreens!
+        const isSpoofingDesktop = (!isMobileUA && navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
+                                  (!isMobileUA && /Linux aarch64|Linux arm/.test(navigator.platform) && navigator.maxTouchPoints > 0);
+                                  
+        if (isMobileUA || isSpoofingDesktop) {
+            document.body.innerHTML = `<div class="fixed inset-0 z-[9999] bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-white flex items-center justify-center p-8 text-center"><h1 class="text-2xl md:text-3xl font-black tracking-tight">${isSpoofingDesktop ? 'nice try silly goose! we can still detect you are on mobile.' : 'centauri is not available on mobile.'}</h1></div>`;
+            throw new Error("Mobile execution stopped.");
+        }
+
         const state = {
-            games: [],
-            topLevelFolders: [],
-            currentFolder: null,
-            searchQuery: '',
+            games: [], topLevelFolders: [], currentFolder: null, searchQuery: '',
             settings: {
-                aiRenamerEnabled: true,
-                hoverSoundsEnabled: true
+                theme: 'light', accentColor: '#111827',
+                aiRenamerEnabled: true, hoverSoundsEnabled: true, globalMusicEnabled: false
             },
-            appStarted: false
+            appStarted: false,
+            setupCompleted: false
         };
 
-        // --- LOCAL TIME CLOCK ---
+        const targetLaunchDate = new Date('2026-10-08T14:30:00-04:00').getTime();
+        let countdownTimerId = null;
+        let cheatBuffer = "";
+        let audioInteractionVerified = false;
+
+        // Catch user clicks anywhere to verify audio interaction policies
+        document.body.addEventListener('click', () => {
+            if(!audioInteractionVerified) {
+                audioInteractionVerified = true;
+                const setupMusic = document.getElementById('setupMusicElement');
+                // Play setup music if we are on a pre-app screen
+                if (!state.appStarted && setupMusic.paused) {
+                    setupMusic.volume = 0.5;
+                    setupMusic.play().catch(()=>{});
+                }
+            }
+        });
+
+        // "88888888" Secret Bypass Listener
+        window.addEventListener('keydown', (e) => {
+            if (state.appStarted) return; // ignore if app already running
+            cheatBuffer += e.key;
+            if (cheatBuffer.length > 8) cheatBuffer = cheatBuffer.slice(-8);
+            if (cheatBuffer === "88888888") {
+                clearInterval(countdownTimerId);
+                document.getElementById('countdownScreen').style.display = 'none';
+                checkSetupStatus();
+            }
+        });
+
+        function loadSettings() {
+            const saved = localStorage.getItem('centauri_settings');
+            const setupDone = localStorage.getItem('centauri_setup_complete');
+            if (setupDone) state.setupCompleted = true;
+
+            if (saved) {
+                state.settings = { ...state.settings, ...JSON.parse(saved) };
+            }
+            
+            // Apply loaded UI preferences
+            applyTheme(state.settings.theme);
+            previewAccent(state.settings.accentColor);
+            
+            // Sync settings UI toggles
+            document.getElementById('toggleAI').checked = state.settings.aiRenamerEnabled;
+            document.getElementById('toggleSound').checked = state.settings.hoverSoundsEnabled;
+            document.getElementById('toggleMusic').checked = state.settings.globalMusicEnabled;
+            document.getElementById('settingTheme').value = state.settings.theme;
+            document.getElementById('settingAccent').value = state.settings.accentColor;
+        }
+
+        function saveSettings() {
+            // Get from Settings Modal
+            state.settings.theme = document.getElementById('settingTheme').value;
+            state.settings.aiRenamerEnabled = document.getElementById('toggleAI').checked;
+            state.settings.hoverSoundsEnabled = document.getElementById('toggleSound').checked;
+            state.settings.globalMusicEnabled = document.getElementById('toggleMusic').checked;
+            state.settings.accentColor = document.getElementById('settingAccent').value;
+            
+            localStorage.setItem('centauri_settings', JSON.stringify(state.settings));
+            manageGlobalMusic();
+            if(state.appStarted) renderTopbar();
+        }
+
+        function applyTheme(mode) {
+            if (mode === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            state.settings.theme = mode;
+        }
+
+        function previewTheme(mode) { applyTheme(mode); }
+
+        function previewAccent(color) {
+            document.documentElement.style.setProperty('--accent-bg', color);
+            state.settings.accentColor = color;
+        }
+
+        function toggleSettings(show) {
+            const modal = document.getElementById('settingsModal');
+            if (show) {
+                // sync modal with current state
+                document.getElementById('settingTheme').value = state.settings.theme;
+                document.getElementById('settingAccent').value = state.settings.accentColor;
+                document.getElementById('toggleAI').checked = state.settings.aiRenamerEnabled;
+                document.getElementById('toggleSound').checked = state.settings.hoverSoundsEnabled;
+                document.getElementById('toggleMusic').checked = state.settings.globalMusicEnabled;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function resetApp() {
+            localStorage.removeItem('centauri_settings');
+            localStorage.removeItem('centauri_setup_complete');
+            location.reload();
+        }
+
+        // --- CLOCK & COUNTDOWN ---
         function updateTime() {
             const timeEl = document.getElementById('localTimeDisplay');
             if (timeEl) {
@@ -231,166 +467,142 @@
                 let hours = now.getHours();
                 let minutes = now.getMinutes();
                 const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12;
-            hours = hours ? hours : 12; // the hour '0' should be '12'
-            minutes = minutes < 10 ? '0' + minutes : minutes;
-            const strTime = hours + ':' + minutes + ' ' + ampm;
-            timeEl.textContent = strTime;
-        }
-    }
-    
-    // Start local clock
-    setInterval(updateTime, 1000);
-    updateTime();
-
-    // --- FETCH DISCLAIMER ---
-    fetch('assets/disclaimer.txt')
-        .then(function(response) {
-            if (!response.ok) throw new Error('No disclaimer found');
-            return response.text();
-        })
-        .then(function(text) {
-            const disclaimerEl = document.getElementById('disclaimerText');
-            if (disclaimerEl && text.trim()) {
-                disclaimerEl.textContent = text;
-                disclaimerEl.classList.remove('hidden');
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                timeEl.textContent = hours + ':' + minutes + ' ' + ampm;
             }
-        })
-        .catch(function(err) {
-            // Silently ignore if the disclaimer file does not exist
-        });
-
-    function showClickPrompt() {
-        const prompt = document.getElementById('clickToEnterPrompt');
-        if (prompt) {
-            prompt.classList.remove('opacity-0');
         }
-    }
+        setInterval(updateTime, 1000);
+        updateTime();
 
-    const targetLaunchDate = new Date('2026-10-08T14:00:00-04:00').getTime(); // 2:00 PM EDT
-    let networkTimeOffset = 0;
-    let countdownTimerId = null;
-
-    async function initializeCountdown() {
-        try {
-            // Fetch current time from an independent time server to prevent local clock spoofing
-            const res = await fetch('https://worldtimeapi.org/api/timezone/America/New_York');
-            const data = await res.json();
-            const serverTime = new Date(data.datetime).getTime();
-            networkTimeOffset = serverTime - Date.now();
-            document.getElementById('countdownLabel').classList.remove('pulse-text');
-            document.getElementById('countdownLabel').innerHTML = 'centauri beta 1 is releasing shortly! read the disclaimer <a href="assets/disclaimer.txt" target="_blank" class="underline hover:text-gray-600">here</a>';
-        } catch (err) {
-            console.warn('Network time sync failed, using local device time.');
-            document.getElementById('countdownLabel').classList.remove('pulse-text');
-            document.getElementById('countdownLabel').innerHTML = 'centauri beta 1 is releasing shortly! read the disclaimer <a href="assets/disclaimer.txt" target="_blank" class="underline hover:text-gray-600">here</a>';
-        }
-        runCountdownTick();
-        countdownTimerId = setInterval(runCountdownTick, 1000);
-    }
-
-    function runCountdownTick() {
-        const now = Date.now() + networkTimeOffset;
-        const distance = targetLaunchDate - now;
-
-        const countdownScreen = document.getElementById('countdownScreen');
-        const timerEl = document.getElementById('countdownTimer');
-
-        // Unlock when time is reached
-        if (distance <= 0) {
-            clearInterval(countdownTimerId);
-            if (countdownScreen) {
-                countdownScreen.classList.add('opacity-0');
-                setTimeout(function() { countdownScreen.remove(); }, 1000);
+        function startCountdownCheck() {
+            const now = Date.now();
+            if (now < targetLaunchDate) {
+                document.getElementById('countdownScreen').classList.remove('hidden');
+                runCountdownTick();
+                countdownTimerId = setInterval(runCountdownTick, 1000);
+            } else {
+                checkSetupStatus();
             }
-            // Show the "click to enter" prompt 5 seconds AFTER the countdown finishes
-            setTimeout(showClickPrompt, 5000);
-            return;
         }
 
-        // Calculate time parts
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        function runCountdownTick() {
+            const distance = targetLaunchDate - Date.now();
+            if (distance <= 0) {
+                clearInterval(countdownTimerId);
+                document.getElementById('countdownScreen').style.display = 'none';
+                checkSetupStatus();
+                return;
+            }
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-        let display = '';
-        if (days > 0) display += days + 'd ';
-        display += String(hours).padStart(2, '0') + ':' + 
-                   String(minutes).padStart(2, '0') + ':' + 
-                   String(seconds).padStart(2, '0');
+            let display = '';
+            if (days > 0) display += days + 'd ';
+            display += String(hours).padStart(2, '0') + ':' + 
+                       String(minutes).padStart(2, '0') + ':' + 
+                       String(seconds).padStart(2, '0');
+            document.getElementById('countdownTimer').textContent = display;
+        }
 
-        if (timerEl) timerEl.textContent = display;
-    }
+        // --- SETUP WIZARD ---
+        function checkSetupStatus() {
+            if (!state.setupCompleted) {
+                // Show Setup Wizard
+                const setupWizard = document.getElementById('setupWizard');
+                setupWizard.classList.remove('hidden');
+                setupWizard.classList.add('flex');
+                
+                // Sync UI with defaults
+                document.getElementById('setupTheme').value = state.settings.theme;
+                document.getElementById('setupAccent').value = state.settings.accentColor;
+                document.getElementById('setupAI').checked = state.settings.aiRenamerEnabled;
+                document.getElementById('setupSound').checked = state.settings.hoverSoundsEnabled;
+                document.getElementById('setupMusic').checked = state.settings.globalMusicEnabled;
+                
+            } else {
+                startHelloSequence();
+            }
+        }
 
-    // Start countdown sync on load
-    initializeCountdown();
+        function finalizeSetup(skipped = false) {
+            if (!skipped) {
+                state.settings.theme = document.getElementById('setupTheme').value;
+                state.settings.accentColor = document.getElementById('setupAccent').value;
+                state.settings.aiRenamerEnabled = document.getElementById('setupAI').checked;
+                state.settings.hoverSoundsEnabled = document.getElementById('setupSound').checked;
+                state.settings.globalMusicEnabled = document.getElementById('setupMusic').checked;
+                localStorage.setItem('centauri_settings', JSON.stringify(state.settings));
+            }
+            localStorage.setItem('centauri_setup_complete', 'true');
+            state.setupCompleted = true;
+            
+            document.getElementById('setupWizard').style.display = 'none';
+            startHelloSequence();
+        }
 
-    function enterApp() {
-        if (state.appStarted) return;
+        function startHelloSequence() {
+            // Check for disclaimer
+            fetch('assets/disclaimer.txt').then(r => {
+                if(r.ok) return r.text();
+                throw new Error();
+            }).then(text => {
+                const disc = document.getElementById('disclaimerText');
+                if(text.trim()) { disc.textContent = text; disc.classList.remove('hidden'); }
+            }).catch(()=>{});
+
+            const startupScreen = document.getElementById('startupScreen');
+            startupScreen.classList.remove('hidden');
+            document.querySelector('.hello__svg').classList.add('start-anim');
+            setTimeout(() => {
+                const prompt = document.getElementById('clickToEnterPrompt');
+                prompt.classList.remove('opacity-0');
+            }, 5000);
+        }
+
+        // Initialize App Configuration
+        loadSettings();
+        startCountdownCheck();
+
+        // --- STREAMING_CHUNK:App Core Functions (Audio, Layout, API) ---
+        function enterApp() {
+            if (state.appStarted) return;
             state.appStarted = true;
             
-            // Audio context requires user interaction to start playing in modern browsers
-            initAudio();
+            // Stop setup music
+            const setupMusic = document.getElementById('setupMusicElement');
+            setupMusic.pause();
+            setupMusic.currentTime = 0;
+            
+            // Initialize hover/global audio
+            if (state.settings.hoverSoundsEnabled) {
+                const hover = document.getElementById('hoverSoundElement');
+                hover.play().then(() => { hover.pause(); hover.currentTime = 0; }).catch(()=>{});
+            }
+            manageGlobalMusic();
             
             const startupScreen = document.getElementById('startupScreen');
             const appLoader = document.getElementById('appLoader');
-            
             startupScreen.classList.add('startup-fade-out');
             
-            // Wait for fade out to complete before removing from DOM and starting loader
             setTimeout(() => {
                 startupScreen.remove();
                 appLoader.classList.remove('hidden');
                 appLoader.classList.add('flex');
-                
-                // Initialize settings and fetch data
-                loadSettings();
                 fetchGitHubCatalog();
             }, 800);
         }
 
-        // --- SETTINGS LOGIC ---
-        function loadSettings() {
-            const saved = localStorage.getItem('centauri_settings');
-            if (saved) {
-                state.settings = JSON.parse(saved);
-                document.getElementById('toggleAI').checked = state.settings.aiRenamerEnabled;
-                document.getElementById('toggleSound').checked = state.settings.hoverSoundsEnabled;
-            }
-        }
-
-        function saveSettings() {
-            state.settings.aiRenamerEnabled = document.getElementById('toggleAI').checked;
-            state.settings.hoverSoundsEnabled = document.getElementById('toggleSound').checked;
-            localStorage.setItem('centauri_settings', JSON.stringify(state.settings));
-        }
-
-        function toggleSettings(show) {
-            const modal = document.getElementById('settingsModal');
-            if (show) {
-                modal.classList.remove('hidden');
+        function manageGlobalMusic() {
+            const globalMusic = document.getElementById('globalMusicElement');
+            if(state.settings.globalMusicEnabled && state.appStarted) {
+                globalMusic.volume = 0.3;
+                globalMusic.play().catch(()=>{});
             } else {
-                modal.classList.add('hidden');
-            }
-        }
-
-        function resetApp() {
-            localStorage.removeItem('centauri_settings');
-            location.reload();
-        }
-
-        // --- AUDIO SYSTEM ---
-        function initAudio() {
-            if (!state.settings.hoverSoundsEnabled) return;
-            const audioEl = document.getElementById('hoverSoundElement');
-            if (audioEl && audioEl.paused) {
-                audioEl.play().then(function() {
-                    audioEl.pause();
-                    audioEl.currentTime = 0;
-                }).catch(function(e) {
-                    console.log("Audio init blocked by browser.", e);
-                }); 
+                globalMusic.pause();
             }
         }
 
@@ -402,18 +614,17 @@
                 const audioEl = document.getElementById('hoverSoundElement');
                 if (audioEl) {
                     audioEl.currentTime = 0; 
-                    audioEl.volume = 0.2; 
-                    audioEl.play().catch(function(e) {}); 
+                    audioEl.volume = 0.4; 
+                    audioEl.play().catch(()=>{}); 
                 }
                 lastHoverTime = now;
             }
         }
-
-        document.body.addEventListener('mouseenter', function(e) {
+        document.body.addEventListener('mouseenter', e => {
             if (e.target.closest('.hover-sound')) playHoverSound();
         }, true);
 
-        // --- CATEGORY ICONS ---
+        // --- CATEGORY & RENDER LOGIC ---
         const categoryIcons = {
             'action': 'fa-crosshairs', 'arcade': 'fa-ghost', 'puzzle': 'fa-puzzle-piece',
             'racing': 'fa-flag-checkered', 'sports': 'fa-futbol', 'rpg': 'fa-dragon',
@@ -430,45 +641,35 @@
         }
 
         function getGameBannerHtml(title) {
-            const colors = ['bg-slate-200', 'bg-zinc-200', 'bg-neutral-200', 'bg-stone-200', 'bg-gray-200'];
-            const charCode = title.charCodeAt(0) || 0;
-            const bgColor = colors[charCode % colors.length];
-            
-            // The image src uses a transparent pixel initially to avoid broken image icons before load.
-            // The onerror handler falls back to assets/error.png
-            return '<div class="absolute inset-0 w-full h-full ' + bgColor + ' flex items-center justify-center">' +
-                   '<i class="fallback-icon fa-solid fa-gamepad text-gray-400/20 text-5xl"></i>' +
-                   '<img data-title="' + title + '" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null; this.src=\'assets/error.png\'; this.classList.add(\'lazy-cover\');" class="lazy-cover w-full h-full object-cover" />' +
-                   '</div>';
+            return `<div class="absolute inset-0 w-full h-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+                    <i class="fallback-icon fa-solid fa-gamepad text-gray-400 dark:text-gray-600 text-5xl"></i>
+                    <img data-title="${title}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null; this.src='assets/error.png'; this.classList.add('opacity-100'); this.previousElementSibling.style.display='none';" class="lazy-cover absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500" onload="if(this.src.includes('http') || this.src.includes('error.png')) { this.classList.add('opacity-100'); this.previousElementSibling.style.display='none'; }">
+                   </div>`;
         }
 
         function observeThumbnails() {
-            const observer = new IntersectionObserver(function(entries) {
-                entries.forEach(function(entry) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
                     if(entry.isIntersecting) {
                         const img = entry.target;
                         const title = img.dataset.title;
                         if(title && !img.dataset.loaded) {
                             img.dataset.loaded = 'true';
                             fetch('https://itunes.apple.com/search?term=' + encodeURIComponent(title + " game") + '&entity=software&limit=1')
-                            .then(function(r) { return r.json(); })
-                            .then(function(data) {
+                            .then(r => r.json())
+                            .then(data => {
                                 if(data.results && data.results.length > 0 && data.results[0].artworkUrl512) {
                                     img.src = data.results[0].artworkUrl512;
                                 } else {
-                                    // Manually trigger onerror if no results
                                     img.dispatchEvent(new Event('error'));
                                 }
-                            }).catch(function() {
-                                img.dispatchEvent(new Event('error'));
-                            });
+                            }).catch(() => img.dispatchEvent(new Event('error')));
                             observer.unobserve(img);
                         }
                     }
                 });
             }, { rootMargin: '100px' });
-
-            document.querySelectorAll('.lazy-cover').forEach(function(img) { observer.observe(img); });
+            document.querySelectorAll('.lazy-cover').forEach(img => observer.observe(img));
         }
 
         async function fetchGitHubCatalog() {
@@ -476,7 +677,7 @@
             const appLoader = document.getElementById('appLoader');
             let progress = 0;
 
-            const progressInterval = setInterval(function() {
+            const progressInterval = setInterval(() => {
                 if (progress < 95) {
                     progress += Math.random() * 8;
                     if (progress > 95) progress = 95;
@@ -486,16 +687,14 @@
 
             try {
                 const response = await fetch('https://api.github.com/repos/1ucent/centauri/git/trees/main?recursive=1');
-                if (!response.ok) throw new Error("GitHub API returned status " + response.status);
+                if (!response.ok) throw new Error("GitHub API Error");
                 
                 const data = await response.json();
                 const targetPrefix = 'assets/ugs/';
                 const foldersSet = new Set();
                 let parsedGames = [];
-                
-                if (!data.tree) throw new Error("Invalid repository tree payload received.");
 
-                data.tree.forEach(function(node) {
+                data.tree.forEach(node => {
                     const pathLower = node.path.toLowerCase();
                     if (pathLower.startsWith(targetPrefix) && pathLower.endsWith('.html')) {
                         const relativePath = node.path.substring(targetPrefix.length);
@@ -510,11 +709,8 @@
                         const cleanTitle = rawTitle.charAt(0).toUpperCase() + rawTitle.slice(1);
 
                         parsedGames.push({
-                            id: node.sha,
-                            title: cleanTitle,
-                            url: url,
-                            banner: getGameBannerHtml(cleanTitle),
-                            folderPath: folderPath
+                            id: node.sha, title: cleanTitle, url: url,
+                            banner: getGameBannerHtml(cleanTitle), folderPath: folderPath
                         });
                     }
                 });
@@ -525,10 +721,10 @@
                 clearInterval(progressInterval);
                 if (percentageEl) percentageEl.textContent = "100%";
                 
-                setTimeout(function() {
+                setTimeout(() => {
                     if (appLoader) {
                         appLoader.style.opacity = '0';
-                        setTimeout(function() { 
+                        setTimeout(() => { 
                             appLoader.classList.remove('flex');
                             appLoader.classList.add('hidden'); 
                         }, 500);
@@ -542,58 +738,44 @@
                 renderContent();
 
                 if(state.settings.aiRenamerEnabled) {
-                    smartEnhanceUnsortedNames(parsedGames).then(function(updatedGames) {
+                    smartEnhanceUnsortedNames(parsedGames).then(updatedGames => {
                         state.games = updatedGames;
-                        // Silently update the specific titles in the DOM avoiding full re-render flash
-                        updatedGames.forEach(function(game) {
+                        updatedGames.forEach(game => {
                             const titleEl = document.getElementById('game-title-' + game.id);
-                            if (titleEl) titleEl.textContent = game.title.toLowerCase(); // keep it lowercase
+                            if (titleEl) titleEl.textContent = game.title.toLowerCase();
                         });
-                    }).catch(function(err) { console.log("AI skipped:", err); });
+                    }).catch(e => console.log("AI skipped", e));
                 }
-
             } catch (error) {
                 console.error("Fetch Error:", error);
                 clearInterval(progressInterval);
-                if (percentageEl) {
-                    percentageEl.textContent = "ERR";
-                    percentageEl.classList.add("text-red-500");
-                }
-                setTimeout(function() {
-                    if (appLoader) {
-                        appLoader.style.opacity = '0';
-                        setTimeout(function() { 
-                            appLoader.classList.remove('flex');
-                            appLoader.classList.add('hidden'); 
-                        }, 500);
-                    }
+                if (percentageEl) percentageEl.textContent = "ERR";
+                setTimeout(() => {
+                    if (appLoader) appLoader.classList.add('hidden');
                 }, 1500);
-
                 document.getElementById('gameContainer').innerHTML = 
-                    '<div class="col-span-full flex flex-col items-center justify-center h-64 text-center">' +
-                    '<div class="w-12 h-12 bg-gray-200 text-red-500 flex items-center justify-center mb-4 text-xl border border-gray-300">' +
-                    '<i class="fa-solid fa-triangle-exclamation"></i></div>' +
-                    '<h3 class="text-lg font-semibold text-gray-900">Connection Failed</h3>' +
-                    '<p class="text-gray-600 text-sm mt-1">' + error.message + '</p></div>';
+                    `<div class="col-span-full flex justify-center h-64 text-center">
+                        <h3 class="text-lg font-semibold">connection failed.</h3>
+                    </div>`;
             }
         }
 
         function renderTopbar() {
             const list = document.getElementById('folderList');
             let html = '';
-
-            state.topLevelFolders.forEach(function(folder) {
+            state.topLevelFolders.forEach(folder => {
                 const isActive = state.currentFolder === folder;
                 const activeClasses = isActive 
-                    ? 'bg-gray-900 text-white border-transparent' 
-                    : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-100 hover:text-gray-900';
+                    ? 'text-gray-900 dark:text-gray-900 border-transparent shadow-sm' 
+                    : 'bg-white dark:bg-cardbg text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white';
+                
+                const activeStyle = isActive ? `background-color: var(--accent-bg);` : '';
                 const icon = getCategoryIcon(folder);
-                const displayName = folder.replace(/[-_]/g, ' ');
+                const displayName = folder.replace(/[-_]/g, ' ').toLowerCase();
 
-                html += '<button onclick="selectFolder(\'' + folder + '\')" class="hover-sound flex-shrink-0 px-4 py-1.5 text-sm font-semibold tracking-wider transition-colors flex items-center gap-2 border rounded ' + activeClasses + '">' +
-                        '<i class="fa-solid ' + icon + '"></i><span>' + displayName.toLowerCase() + '</span></button>';
+                html += `<button onclick="selectFolder('${folder}')" style="${activeStyle}" class="hover-sound flex-shrink-0 px-4 py-1.5 text-sm font-bold tracking-wider rounded-lg transition-colors flex items-center gap-2 border ${activeClasses}">
+                        <i class="fa-solid ${icon}"></i><span>${displayName}</span></button>`;
             });
-
             list.innerHTML = html;
         }
 
@@ -601,34 +783,24 @@
             state.currentFolder = folderPath;
             state.searchQuery = '';
             document.getElementById('searchInput').value = '';
-            
-            const cleanTitle = folderPath.split('/').pop().replace(/[-_]/g, ' ');
-            document.getElementById('currentCategoryTitle').textContent = cleanTitle.toLowerCase();
-            
+            document.getElementById('currentCategoryTitle').textContent = folderPath.split('/').pop().replace(/[-_]/g, ' ').toLowerCase();
             renderTopbar();
             renderContent();
             document.getElementById('mainContent').scrollTop = 0;
         }
 
-        function getAdHtml() {
-            return '<div class="bg-gray-100 border border-gray-300 overflow-hidden flex flex-col justify-center items-center p-4 fade-in text-center relative group aspect-square">' +
-                   '<span class="absolute top-2 right-2 bg-gray-200 text-gray-600 text-[10px] font-bold px-1.5 py-0.5 tracking-wider">ad</span>' +
-                   '<i class="fa-solid fa-rectangle-ad text-3xl text-gray-400 mb-2"></i>' +
-                   '<h3 class="font-semibold text-gray-500 text-sm tracking-wide">sponsor</h3>' +
-                   '</div>';
-        }
-
         function renderContent() {
             const container = document.getElementById('gameContainer');
-            
             if (!state.currentFolder && !state.searchQuery) {
                 document.getElementById('currentCategoryTitle').textContent = 'library';
                 container.innerHTML = 
-                    '<div class="col-span-full flex flex-col items-center justify-center h-[50vh] text-center fade-in">' +
-                    '<div class="w-16 h-16 bg-gray-200 flex items-center justify-center mb-4 border border-gray-300">' +
-                    '<i class="fa-solid fa-folder-open text-2xl text-gray-500"></i></div>' +
-                    '<h2 class="text-2xl font-bold text-gray-900 mb-2">select a category</h2>' +
-                    '<p class="text-gray-600 text-base max-w-sm">browse the navigation bar above or use the search field to find specific items.</p></div>';
+                    `<div class="col-span-full flex flex-col items-center justify-center h-[50vh] text-center fade-in">
+                        <div class="w-16 h-16 bg-white dark:bg-cardbg rounded-2xl flex items-center justify-center mb-4 border border-gray-200 dark:border-gray-800 shadow-sm">
+                            <i class="fa-solid fa-folder-open text-2xl text-gray-400 dark:text-gray-500"></i>
+                        </div>
+                        <h2 class="text-2xl font-black mb-2">select a category</h2>
+                        <p class="text-gray-500 dark:text-gray-400 max-w-sm font-medium">browse the navigation bar or search.</p>
+                    </div>`;
                 return;
             }
 
@@ -637,57 +809,42 @@
 
             if (state.searchQuery) {
                 const q = state.searchQuery.toLowerCase();
-                filteredGames = state.games.filter(function(g) { return g.title.toLowerCase().includes(q); });
+                filteredGames = state.games.filter(g => g.title.toLowerCase().includes(q));
             } else if (state.currentFolder) {
                 const isUnsorted = state.currentFolder.toLowerCase().includes('unsorted');
-
                 if (isUnsorted) {
-                    filteredGames = state.games.filter(function(g) { return g.folderPath.startsWith(state.currentFolder); });
+                    filteredGames = state.games.filter(g => g.folderPath.startsWith(state.currentFolder));
                 } else {
-                    filteredGames = state.games.filter(function(g) { return g.folderPath === state.currentFolder; });
-                    
-                    state.games.forEach(function(g) {
+                    filteredGames = state.games.filter(g => g.folderPath === state.currentFolder);
+                    state.games.forEach(g => {
                         if (g.folderPath.startsWith(state.currentFolder + '/') && g.folderPath !== state.currentFolder) {
-                            const subPath = g.folderPath.substring(state.currentFolder.length + 1);
-                            const nextFolder = subPath.split('/')[0];
-                            if (nextFolder) subfolders.add(state.currentFolder + '/' + nextFolder);
+                            subfolders.add(state.currentFolder + '/' + g.folderPath.substring(state.currentFolder.length + 1).split('/')[0]);
                         }
                     });
                 }
             }
 
             let html = '';
-            let itemCount = 0;
-
-            subfolders.forEach(function(subPath) {
-                const displayName = subPath.split('/').pop().replace(/[-_]/g, ' ');
+            subfolders.forEach(subPath => {
+                const displayName = subPath.split('/').pop().replace(/[-_]/g, ' ').toLowerCase();
                 const icon = getCategoryIcon(displayName);
-                
-                html += '<button onclick="selectFolder(\'' + subPath + '\')" class="hover-sound bg-gray-100 p-6 border border-gray-300 hover:border-gray-500 transition-colors flex flex-col items-center justify-center group aspect-square">' +
-                        '<div class="w-12 h-12 bg-white flex items-center justify-center border border-gray-300 group-hover:bg-gray-100 transition-colors">' +
-                        '<i class="fa-solid ' + icon + ' text-xl text-gray-500 group-hover:text-gray-900 transition-colors"></i></div>' +
-                        '<span class="font-semibold text-gray-700 text-base text-center">' + displayName.toLowerCase() + '</span></button>';
-                itemCount++;
-                if (itemCount % 5 === 0) html += getAdHtml();
+                html += `<button onclick="selectFolder('${subPath}')" class="hover-sound bg-white dark:bg-cardbg p-6 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-gray-400 dark:hover:border-gray-600 transition-all flex flex-col items-center justify-center gap-3 fade-in group aspect-square shadow-sm">
+                        <div class="w-12 h-12 bg-gray-50 dark:bg-gray-800 rounded-xl flex items-center justify-center border border-gray-100 dark:border-gray-700 group-hover:bg-gray-100 dark:group-hover:bg-gray-700 transition-colors">
+                            <i class="fa-solid ${icon} text-xl text-gray-400 dark:text-gray-500 group-hover:text-gray-900 dark:group-hover:text-white transition-colors"></i>
+                        </div>
+                        <span class="font-bold text-gray-700 dark:text-gray-300 text-base text-center">${displayName}</span></button>`;
             });
 
-            filteredGames.forEach(function(game) {
-                html += '<div onclick="openGame(\'' + game.url + '\', \'' + game.title.replace(/'/g, "\\'") + '\')" class="hover-sound game-card border border-gray-300 overflow-hidden cursor-pointer fade-in relative aspect-square group">' +
-                        game.banner +
-                        '<div class="absolute bottom-0 left-0 w-full p-3 z-20 flex flex-col justify-end text-white bg-gradient-to-t from-black/80 to-transparent">' +
-                        '<h3 id="game-title-' + game.id + '" class="font-bold text-base leading-tight line-clamp-2">' + game.title.toLowerCase() + '</h3>' +
-                        '</div></div>';
-                itemCount++;
-                if (itemCount % 5 === 0) html += getAdHtml();
+            filteredGames.forEach(game => {
+                html += `<div onclick="openGame('${game.url}', '${game.title.replace(/'/g, "\\'")}')" class="hover-sound game-card rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden cursor-pointer fade-in relative group aspect-square shadow-sm hover:shadow-md transition-shadow">
+                        ${game.banner}
+                        <div class="absolute bottom-0 left-0 w-full p-4 pt-8 z-20 flex flex-col justify-end text-white bg-gradient-to-t from-black/80 via-black/40 to-transparent backdrop-blur-[2px]">
+                            <h3 id="game-title-${game.id}" class="font-bold text-base leading-tight drop-shadow-md">${game.title.toLowerCase()}</h3>
+                        </div></div>`;
             });
 
-            if (itemCount === 0) {
-                container.innerHTML = 
-                    '<div class="col-span-full flex flex-col items-center justify-center h-[40vh] text-center fade-in">' +
-                    '<div class="w-12 h-12 bg-gray-200 text-gray-600 flex items-center justify-center mb-4 text-xl border border-gray-300">' +
-                    '<i class="fa-solid fa-magnifying-glass"></i></div>' +
-                    '<h3 class="text-lg font-semibold text-gray-900">no results found</h3>' +
-                    '<p class="text-gray-600 text-base mt-1">try a different category or search term.</p></div>';
+            if (html === '') {
+                container.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center h-[40vh] text-center fade-in"><h3 class="text-lg font-bold">no results found</h3></div>`;
             } else {
                 container.innerHTML = html;
                 observeThumbnails();
@@ -697,8 +854,7 @@
         function openGame(url, title) {
             document.getElementById('modalTitle').textContent = title.toLowerCase();
             document.getElementById('gameIframe').src = url;
-            const modal = document.getElementById('gameModal');
-            modal.classList.remove('hidden');
+            document.getElementById('gameModal').classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
         }
 
@@ -711,25 +867,15 @@
         function copyGameLink() {
             const url = document.getElementById('gameIframe').src;
             if(!url) return;
-            
             const tempInput = document.createElement('input');
             tempInput.value = url;
             document.body.appendChild(tempInput);
             tempInput.select();
             document.execCommand('copy');
             document.body.removeChild(tempInput);
-            
-            const btn = event.currentTarget;
-            const icon = btn.querySelector('i');
-            icon.classList.remove('fa-link');
-            icon.classList.add('fa-check', 'text-gray-900');
-            setTimeout(function() {
-                icon.classList.remove('fa-check', 'text-gray-900');
-                icon.classList.add('fa-link');
-            }, 2000);
         }
 
-        document.getElementById('searchInput').addEventListener('input', function(e) {
+        document.getElementById('searchInput').addEventListener('input', e => {
             state.searchQuery = e.target.value;
             if(state.searchQuery) {
                 document.getElementById('currentCategoryTitle').textContent = 'search results';
@@ -742,51 +888,33 @@
         });
 
         async function smartEnhanceUnsortedNames(gamesList) {
-            const unsortedGames = gamesList.filter(function(g) { return g.folderPath.toLowerCase().includes('unsorted'); });
+            const unsortedGames = gamesList.filter(g => g.folderPath.toLowerCase().includes('unsorted'));
             if (unsortedGames.length === 0) return gamesList;
-
-            const rawNames = unsortedGames.map(function(g) { return g.title; });
-            const prompt = "You are a metadata formatter. Fix these raw filenames into clean software titles. Return ONLY a valid JSON array of strings in the exact same order. Do not include markdown, no extra text. Input: " + JSON.stringify(rawNames);
-
+            const rawNames = unsortedGames.map(g => g.title);
+            const prompt = `You are a metadata formatter. Fix these raw filenames into clean software titles. Return ONLY a valid JSON array of strings in the exact same order. Do not include markdown fences.\nExamples:\n\"super-mario-bros_v2\" -> \"Super Mario Bros.\"\nNames to fix:\n${JSON.stringify(rawNames)}`;
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(function() { controller.abort(); }, 8000);
-
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
                 const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    signal: controller.signal,
-                    body: JSON.stringify({
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    signal: controller.signal, body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt }] }],
                         generationConfig: { temperature: 0.1, responseMimeType: "application/json" }
                     })
                 });
-
                 clearTimeout(timeoutId);
-
                 const result = await response.json();
                 if (result.candidates && result.candidates.length > 0) {
                     let cleanedText = result.candidates[0].content.parts[0].text.trim();
-                    if (cleanedText.startsWith('```json')) cleanedText = cleanedText.substring(7);
-                    if (cleanedText.startsWith('```')) cleanedText = cleanedText.substring(3);
-                    if (cleanedText.endsWith('```')) cleanedText = cleanedText.substring(0, cleanedText.length - 3);
-                    
+                    if (cleanedText.startsWith('```json')) cleanedText = cleanedText.substring(7, cleanedText.length - 3);
                     const cleanedNames = JSON.parse(cleanedText.trim());
-                    
                     if(Array.isArray(cleanedNames) && cleanedNames.length === unsortedGames.length) {
-                        unsortedGames.forEach(function(game, index) {
-                            game.title = cleanedNames[index];
-                            // Note: we don't recreate the banner HTML here to avoid breaking the image observer
-                        });
-                        return gamesList;
+                        unsortedGames.forEach((game, i) => game.title = cleanedNames[i]);
                     }
                 }
-            } catch (err) {
-                console.warn("Title Formatting skipped:", err);
-            }
+            } catch (err) { }
             return gamesList;
         }
-
     </script>
 </body>
 </html>
