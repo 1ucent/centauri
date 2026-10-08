@@ -362,14 +362,67 @@
         let countdownTimerId = null;
         let cheatBuffer = "";
 
-        // Catch user clicks anywhere to verify audio interaction policies and unblock music
+        let globalMusicFadeInterval = null;
+
+        function fadeOutGlobalMusic() {
+            const audio = document.getElementById('globalMusicElement');
+            if (!audio || audio.paused) return;
+            clearInterval(globalMusicFadeInterval);
+            let vol = audio.volume;
+            globalMusicFadeInterval = setInterval(() => {
+                vol -= 0.05;
+                if (vol <= 0) {
+                    audio.volume = 0;
+                    audio.pause();
+                    clearInterval(globalMusicFadeInterval);
+                } else {
+                    audio.volume = vol;
+                }
+            }, 100);
+        }
+
+        function fadeInGlobalMusic() {
+            const audio = document.getElementById('globalMusicElement');
+            if (!audio || !state.settings.globalMusicEnabled) return;
+            clearInterval(globalMusicFadeInterval);
+            audio.volume = 0;
+            audio.play().catch(()=>{});
+            let vol = 0;
+            globalMusicFadeInterval = setInterval(() => {
+                vol += 0.05;
+                if (vol >= 0.3) {
+                    audio.volume = 0.3;
+                    clearInterval(globalMusicFadeInterval);
+                } else {
+                    audio.volume = vol;
+                }
+            }, 100);
+        }
+
+        // Catch user clicks anywhere to verify audio interaction policies and unblock music safely
+        let audioUnlocked = false;
         document.body.addEventListener('click', () => {
+            if (!audioUnlocked) {
+                audioUnlocked = true;
+                // Unlock sounds safely without interrupting the loading track if it is currently running!
+                ['hoverSoundElement', 'pressSoundElement', 'returnSoundElement', 'globalMusicElement', 'setupMusicElement'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el && el.paused) { 
+                        el.play().then(() => { 
+                            if(id !== 'setupMusicElement' || !state.appStarted || document.getElementById('appLoader').classList.contains('hidden')) {
+                                el.pause(); 
+                                el.currentTime = 0; 
+                            }
+                        }).catch(()=>{}); 
+                    }
+                });
+            }
+            
             if (state.appStarted && document.getElementById('appLoader').classList.contains('hidden')) {
-                if (state.settings.globalMusicEnabled) {
+                if (state.settings.globalMusicEnabled && document.getElementById('gameModal').classList.contains('hidden')) {
                     const globalMusic = document.getElementById('globalMusicElement');
                     if (globalMusic && globalMusic.paused) {
-                        globalMusic.volume = 0.3;
-                        globalMusic.play().catch(()=>{});
+                        fadeInGlobalMusic();
                     }
                 }
             }
@@ -632,11 +685,10 @@
 
         function manageGlobalMusic() {
             const globalMusic = document.getElementById('globalMusicElement');
-            if(state.settings.globalMusicEnabled && state.appStarted) {
-                globalMusic.volume = 0.3;
-                globalMusic.play().catch(()=>{});
+            if(state.settings.globalMusicEnabled && state.appStarted && document.getElementById('gameModal').classList.contains('hidden')) {
+                fadeInGlobalMusic();
             } else {
-                globalMusic.pause();
+                fadeOutGlobalMusic();
             }
         }
 
@@ -788,13 +840,24 @@
                             appLoader.classList.remove('flex');
                             appLoader.classList.add('hidden'); 
                             
-                            // Stop loading loop and start global menu music
+                            // Smoothly fade out loading loop and start global menu music
                             const setupMusic = document.getElementById('setupMusicElement');
                             if (setupMusic) {
-                                setupMusic.pause();
-                                setupMusic.currentTime = 0;
+                                let vol = setupMusic.volume;
+                                let fadeOut = setInterval(() => {
+                                    vol -= 0.1;
+                                    if(vol <= 0) {
+                                        setupMusic.pause();
+                                        setupMusic.currentTime = 0;
+                                        clearInterval(fadeOut);
+                                        manageGlobalMusic();
+                                    } else {
+                                        setupMusic.volume = vol;
+                                    }
+                                }, 50);
+                            } else {
+                                manageGlobalMusic();
                             }
-                            manageGlobalMusic();
                         }, 500);
                     }
                 }, 500);
@@ -965,6 +1028,7 @@
 
         function openGame(url, title) {
             playPressSound();
+            fadeOutGlobalMusic();
             document.getElementById('modalTitle').textContent = title.toLowerCase();
             document.getElementById('gameModal').classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
@@ -974,6 +1038,7 @@
 
         function closeGame() {
             playReturnSound();
+            fadeInGlobalMusic();
             document.getElementById('gameIframe').src = '';
             document.getElementById('gameModal').classList.add('hidden');
             document.body.classList.remove('overflow-hidden');
