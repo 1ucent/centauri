@@ -99,6 +99,13 @@
     <audio id="setupMusicElement" src="assets/loading-loop.mp3" loop preload="auto"></audio>
     <audio id="globalMusicElement" src="assets/menu.mp3" loop preload="auto"></audio>
 
+    <div id="eggScreen" class="fixed inset-0 bg-black z-[85] hidden flex-col items-center justify-center transition-opacity duration-800 cursor-pointer" onclick="handleEggClick()">
+        <video id="eggVideoElement" src="assets/egg.mp3" class="absolute inset-0 w-full h-full object-contain hidden bg-black" playsinline></video>
+        <div id="eggPrompt" class="text-white font-bold tracking-widest uppercase text-sm pulse-text z-10 transition-opacity duration-500">
+            click to enter sequence
+        </div>
+    </div>
+
     <div id="countdownScreen" class="fixed inset-0 bg-gray-50 dark:bg-darkbg z-[90] flex flex-col items-center justify-center transition-opacity duration-1000 hidden">
         <div class="flex flex-col items-center text-center px-4">
             <h1 id="countdownTimer" class="text-5xl md:text-7xl font-black text-gray-900 dark:text-white tracking-widest font-mono mb-3">--:--:--</h1>
@@ -287,6 +294,17 @@
                     </label>
                 </div>
 
+                <div class="flex items-center justify-between p-5 bg-gray-50 dark:bg-cardbg border border-gray-100 dark:border-gray-800 shadow-sm">
+                    <div>
+                        <span class="text-gray-900 dark:text-white text-base font-bold block">easter egg startup</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-sm">replace the normal title screen with a secret sequence.</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="toggleEgg" class="sr-only peer" onchange="saveSettings()">
+                        <div class="w-11 h-6 bg-gray-300 dark:bg-gray-700 after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:bg-green-500 transition-colors"></div>
+                    </label>
+                </div>
+
                 <div class="pt-6 mt-4">
                     <button onclick="resetApp()" class="px-6 py-3 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 text-sm font-bold transition-colors border border-red-200 dark:border-red-900/50 shadow-sm">
                         reset all data
@@ -379,7 +397,7 @@
             settings: {
                 theme: 'light', accentColor: '#111827',
                 aiRenamerEnabled: true, hoverSoundsEnabled: true, globalMusicEnabled: false,
-                gameLaunchMode: 'cloak'
+                gameLaunchMode: 'cloak', easterEggEnabled: false
             },
             appStarted: false,
             setupCompleted: false
@@ -444,7 +462,9 @@
                 });
 
                 // Start setup music if we are in a pre-app phase (Hello, Setup, Loading)
-                if (!state.appStarted || !document.getElementById('appLoader').classList.contains('hidden') || !document.getElementById('setupWizard').classList.contains('hidden') || !document.getElementById('startupScreen').classList.contains('hidden')) {
+                const eggActive = document.getElementById('eggScreen') && !document.getElementById('eggScreen').classList.contains('hidden');
+                
+                if (!eggActive && (!state.appStarted || !document.getElementById('appLoader').classList.contains('hidden') || !document.getElementById('setupWizard').classList.contains('hidden') || !document.getElementById('startupScreen').classList.contains('hidden'))) {
                     const setupMusic = document.getElementById('setupMusicElement');
                     if (setupMusic && setupMusic.paused) {
                         setupMusic.volume = 0.5;
@@ -510,6 +530,7 @@
             document.getElementById('toggleAI').checked = state.settings.aiRenamerEnabled;
             document.getElementById('toggleSound').checked = state.settings.hoverSoundsEnabled;
             document.getElementById('toggleMusic').checked = state.settings.globalMusicEnabled;
+            document.getElementById('toggleEgg').checked = state.settings.easterEggEnabled;
             document.getElementById('settingTheme').value = state.settings.theme;
             document.getElementById('settingAccent').value = state.settings.accentColor;
             if(document.getElementById('settingLaunchMode')) document.getElementById('settingLaunchMode').value = state.settings.gameLaunchMode || 'cloak';
@@ -521,6 +542,7 @@
             state.settings.aiRenamerEnabled = document.getElementById('toggleAI').checked;
             state.settings.hoverSoundsEnabled = document.getElementById('toggleSound').checked;
             state.settings.globalMusicEnabled = document.getElementById('toggleMusic').checked;
+            state.settings.easterEggEnabled = document.getElementById('toggleEgg').checked;
             state.settings.accentColor = document.getElementById('settingAccent').value;
             if(document.getElementById('settingLaunchMode')) state.settings.gameLaunchMode = document.getElementById('settingLaunchMode').value;
             
@@ -560,6 +582,7 @@
                 document.getElementById('toggleAI').checked = state.settings.aiRenamerEnabled;
                 document.getElementById('toggleSound').checked = state.settings.hoverSoundsEnabled;
                 document.getElementById('toggleMusic').checked = state.settings.globalMusicEnabled;
+                document.getElementById('toggleEgg').checked = state.settings.easterEggEnabled;
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
                 
@@ -695,6 +718,13 @@
         }
 
         function startHelloSequence() {
+            if (state.settings.easterEggEnabled) {
+                const eggScreen = document.getElementById('eggScreen');
+                eggScreen.classList.remove('hidden');
+                eggScreen.classList.add('flex');
+                return;
+            }
+
             // Check for disclaimer
             fetch('assets/disclaimer.txt').then(r => {
                 if(r.ok) return r.text();
@@ -721,6 +751,52 @@
                 const prompt = document.getElementById('clickToEnterPrompt');
                 prompt.classList.remove('opacity-0');
             }, 5000);
+        }
+
+        let eggPlaying = false;
+        function handleEggClick() {
+            const eggScreen = document.getElementById('eggScreen');
+            const videoEl = document.getElementById('eggVideoElement');
+            const promptEl = document.getElementById('eggPrompt');
+            
+            // Ensure setup music doesn't play over the easter egg video
+            const setupMusic = document.getElementById('setupMusicElement');
+            if (setupMusic) setupMusic.pause();
+            
+            if (!eggPlaying) {
+                eggPlaying = true;
+                eggScreen.style.cursor = 'none'; // hide cursor for a cinematic feel
+                
+                // Change prompt to a subtle skip hint
+                promptEl.classList.remove('pulse-text');
+                promptEl.classList.add('opacity-0');
+                setTimeout(() => {
+                    promptEl.textContent = 'click again to skip';
+                    promptEl.classList.remove('opacity-0');
+                    promptEl.classList.add('opacity-20'); // Keep it very faint
+                }, 500);
+
+                videoEl.classList.remove('hidden');
+                
+                videoEl.play().then(() => {
+                    videoEl.onended = () => {
+                        eggScreen.style.cursor = 'pointer';
+                        eggScreen.classList.add('startup-fade-out');
+                        setTimeout(() => { eggScreen.remove(); checkSetupStatus(); }, 800);
+                    };
+                }).catch(() => {
+                    // Fallback if auto-play fails or file is missing
+                    eggScreen.style.cursor = 'pointer';
+                    eggScreen.classList.add('startup-fade-out');
+                    setTimeout(() => { eggScreen.remove(); checkSetupStatus(); }, 800);
+                });
+            } else {
+                // User can click again to skip it entirely
+                videoEl.pause();
+                eggScreen.style.cursor = 'pointer';
+                eggScreen.classList.add('startup-fade-out');
+                setTimeout(() => { eggScreen.remove(); checkSetupStatus(); }, 800);
+            }
         }
 
         // Initialize App Configuration
@@ -1291,4 +1367,3 @@
     </script>
 </body>
 </html>
-
