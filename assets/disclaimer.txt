@@ -1,1 +1,2 @@
-beta 1 v1.03 : updated game links from 1ucent.github.io to centaurrii.com to combat blockers
+beta 1 v1.03 : updated game links from 1ucent.github.io to centaurrii.com to combat blockers, known issues : setup music doesn't play, app icons are inaccurate
+
