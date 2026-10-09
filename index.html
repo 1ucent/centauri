@@ -96,13 +96,13 @@
     <audio id="hoverSoundElement" src="assets/hover.mp3" preload="auto"></audio>
     <audio id="pressSoundElement" src="assets/press.mp3" preload="auto"></audio>
     <audio id="returnSoundElement" src="assets/return.mp3" preload="auto"></audio>
-    <audio id="setupMusicElement" src="assets/loading-loop.mp3" loop preload="auto"></audio>
+    <audio id="setupMusicElement" src="assets/setup.mp3" loop preload="auto"></audio>
+    <audio id="loadingMusicElement" src="assets/loading-loop.mp3" loop preload="auto"></audio>
     <audio id="globalMusicElement" src="assets/menu.mp3" loop preload="auto"></audio>
 
-    <div id="eggScreen" class="fixed inset-0 bg-black z-[85] hidden flex-col items-center justify-center transition-opacity duration-800 cursor-pointer" onclick="handleEggClick()">
+    <div id="eggScreen" class="fixed inset-0 bg-black z-[85] hidden flex-col items-center justify-center transition-opacity duration-800 cursor-pointer">
         <video id="eggVideoElement" src="assets/egg.mp3" class="absolute inset-0 w-full h-full object-contain hidden bg-black" playsinline></video>
-        <div id="eggPrompt" class="text-white font-bold tracking-widest uppercase text-sm pulse-text z-10 transition-opacity duration-500">
-            click to enter sequence
+        <div id="eggPrompt" class="text-white font-bold tracking-widest uppercase text-sm z-10 transition-opacity duration-500">
         </div>
     </div>
 
@@ -451,7 +451,7 @@
             if (!audioUnlocked) {
                 audioUnlocked = true;
                 // Unlock sounds safely without interrupting the loading track!
-                ['hoverSoundElement', 'pressSoundElement', 'returnSoundElement', 'globalMusicElement'].forEach(id => {
+                ['hoverSoundElement', 'pressSoundElement', 'returnSoundElement', 'globalMusicElement', 'setupMusicElement', 'loadingMusicElement'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el && el.paused) { 
                         el.play().then(() => { 
@@ -463,8 +463,9 @@
 
                 // Start setup music if we are in a pre-app phase (Hello, Setup, Loading)
                 const eggActive = document.getElementById('eggScreen') && !document.getElementById('eggScreen').classList.contains('hidden');
+                const loadingActive = document.getElementById('appLoader') && !document.getElementById('appLoader').classList.contains('hidden');
                 
-                if (!eggActive && (!state.appStarted || !document.getElementById('appLoader').classList.contains('hidden') || !document.getElementById('setupWizard').classList.contains('hidden') || !document.getElementById('startupScreen').classList.contains('hidden'))) {
+                if (!eggActive && !loadingActive && (!state.appStarted || !document.getElementById('setupWizard').classList.contains('hidden') || !document.getElementById('startupScreen').classList.contains('hidden'))) {
                     const setupMusic = document.getElementById('setupMusicElement');
                     if (setupMusic && setupMusic.paused) {
                         setupMusic.volume = 0.5;
@@ -674,26 +675,88 @@
             playPressSound();
             const startupScreen = document.getElementById('startupScreen');
             
-            if (!state.setupCompleted) {
-                // Fade out hello screen
+            // Easter Egg takes over HERE (After Hello screen is clicked!)
+            if (state.settings.easterEggEnabled && !window.eggPlayed) {
+                window.eggPlayed = true; // Ensure it only plays once per session
+                
                 if (startupScreen) {
                     startupScreen.classList.add('startup-fade-out');
                     setTimeout(() => startupScreen.remove(), 800);
                 }
 
-                // Show Setup Wizard
+                const eggScreen = document.getElementById('eggScreen');
+                const videoEl = document.getElementById('eggVideoElement');
+                const promptEl = document.getElementById('eggPrompt');
+                
+                eggScreen.classList.remove('hidden');
+                eggScreen.classList.add('flex');
+                
+                const setupMusic = document.getElementById('setupMusicElement');
+                if (setupMusic) setupMusic.pause();
+                
+                eggScreen.style.cursor = 'none';
+                promptEl.classList.remove('opacity-0');
+                promptEl.classList.add('opacity-0'); // start hidden
+                setTimeout(() => {
+                    promptEl.textContent = 'click anywhere to skip';
+                    promptEl.classList.remove('opacity-0');
+                    promptEl.classList.add('opacity-20');
+                }, 1000);
+
+                videoEl.classList.remove('hidden');
+                
+                // Because this is triggered by a user CLICK, the browser will allow auto-play!
+                videoEl.play().then(() => {
+                    videoEl.onended = () => finishEggSequence();
+                }).catch(() => {
+                    finishEggSequence(); // fallback if video fails
+                });
+
+                eggScreen.onclick = () => {
+                    videoEl.pause();
+                    finishEggSequence();
+                };
+                return;
+            }
+
+            proceedAfterStartup();
+        }
+
+        function finishEggSequence() {
+            const eggScreen = document.getElementById('eggScreen');
+            eggScreen.style.cursor = 'pointer';
+            eggScreen.classList.add('startup-fade-out');
+            setTimeout(() => { 
+                eggScreen.remove(); 
+                proceedAfterStartup(); 
+            }, 800);
+        }
+
+        function proceedAfterStartup() {
+            const startupScreen = document.getElementById('startupScreen');
+            if (!state.setupCompleted) {
+                if (startupScreen) {
+                    startupScreen.classList.add('startup-fade-out');
+                    setTimeout(() => startupScreen.remove(), 800);
+                }
+
                 const setupWizard = document.getElementById('setupWizard');
                 setupWizard.classList.remove('hidden');
                 setupWizard.classList.add('flex');
                 
-                // Sync UI with defaults
+                // Resume setup music
+                const setupMusic = document.getElementById('setupMusicElement');
+                if (setupMusic && setupMusic.paused) {
+                    setupMusic.volume = 0.5;
+                    setupMusic.play().catch(()=>{});
+                }
+                
                 document.getElementById('setupTheme').value = state.settings.theme;
                 document.getElementById('setupAccent').value = state.settings.accentColor;
                 if(document.getElementById('setupLaunchMode')) document.getElementById('setupLaunchMode').value = state.settings.gameLaunchMode || 'cloak';
                 document.getElementById('setupAI').checked = state.settings.aiRenamerEnabled;
                 document.getElementById('setupSound').checked = state.settings.hoverSoundsEnabled;
                 document.getElementById('setupMusic').checked = state.settings.globalMusicEnabled;
-                
             } else {
                 enterApp();
             }
@@ -718,13 +781,6 @@
         }
 
         function startHelloSequence() {
-            if (state.settings.easterEggEnabled) {
-                const eggScreen = document.getElementById('eggScreen');
-                eggScreen.classList.remove('hidden');
-                eggScreen.classList.add('flex');
-                return;
-            }
-
             // Check for disclaimer
             fetch('assets/disclaimer.txt').then(r => {
                 if(r.ok) return r.text();
@@ -753,52 +809,6 @@
             }, 5000);
         }
 
-        let eggPlaying = false;
-        function handleEggClick() {
-            const eggScreen = document.getElementById('eggScreen');
-            const videoEl = document.getElementById('eggVideoElement');
-            const promptEl = document.getElementById('eggPrompt');
-            
-            // Ensure setup music doesn't play over the easter egg video
-            const setupMusic = document.getElementById('setupMusicElement');
-            if (setupMusic) setupMusic.pause();
-            
-            if (!eggPlaying) {
-                eggPlaying = true;
-                eggScreen.style.cursor = 'none'; // hide cursor for a cinematic feel
-                
-                // Change prompt to a subtle skip hint
-                promptEl.classList.remove('pulse-text');
-                promptEl.classList.add('opacity-0');
-                setTimeout(() => {
-                    promptEl.textContent = 'click again to skip';
-                    promptEl.classList.remove('opacity-0');
-                    promptEl.classList.add('opacity-20'); // Keep it very faint
-                }, 500);
-
-                videoEl.classList.remove('hidden');
-                
-                videoEl.play().then(() => {
-                    videoEl.onended = () => {
-                        eggScreen.style.cursor = 'pointer';
-                        eggScreen.classList.add('startup-fade-out');
-                        setTimeout(() => { eggScreen.remove(); checkSetupStatus(); }, 800);
-                    };
-                }).catch(() => {
-                    // Fallback if auto-play fails or file is missing
-                    eggScreen.style.cursor = 'pointer';
-                    eggScreen.classList.add('startup-fade-out');
-                    setTimeout(() => { eggScreen.remove(); checkSetupStatus(); }, 800);
-                });
-            } else {
-                // User can click again to skip it entirely
-                videoEl.pause();
-                eggScreen.style.cursor = 'pointer';
-                eggScreen.classList.add('startup-fade-out');
-                setTimeout(() => { eggScreen.remove(); checkSetupStatus(); }, 800);
-            }
-        }
-
         // Initialize App Configuration
         loadSettings();
         startCountdownCheck();
@@ -808,11 +818,18 @@
             if (state.appStarted) return;
             state.appStarted = true;
             
-            // Start loading loop music
+            // Stop setup music
             const setupMusic = document.getElementById('setupMusicElement');
             if (setupMusic) {
-                setupMusic.volume = 0.5;
-                setupMusic.play().catch(()=>{});
+                setupMusic.pause();
+                setupMusic.currentTime = 0;
+            }
+            
+            // Start loading loop music
+            const loadingMusic = document.getElementById('loadingMusicElement');
+            if (loadingMusic) {
+                loadingMusic.volume = 0.5;
+                loadingMusic.play().catch(()=>{});
             }
             
             // Initialize hover audio
@@ -1000,18 +1017,18 @@
                             appLoader.classList.add('hidden'); 
                             
                             // Smoothly fade out loading loop and start global menu music
-                            const setupMusic = document.getElementById('setupMusicElement');
-                            if (setupMusic) {
-                                let vol = setupMusic.volume;
+                            const loadingMusic = document.getElementById('loadingMusicElement');
+                            if (loadingMusic) {
+                                let vol = loadingMusic.volume;
                                 let fadeOut = setInterval(() => {
                                     vol -= 0.1;
                                     if(vol <= 0) {
-                                        setupMusic.pause();
-                                        setupMusic.currentTime = 0;
+                                        loadingMusic.pause();
+                                        loadingMusic.currentTime = 0;
                                         clearInterval(fadeOut);
                                         manageGlobalMusic();
                                     } else {
-                                        setupMusic.volume = vol;
+                                        loadingMusic.volume = vol;
                                     }
                                 }, 50);
                             } else {
@@ -1043,10 +1060,10 @@
                 setTimeout(() => {
                     if (appLoader) appLoader.classList.add('hidden');
                     // Stop loading loop on error
-                    const setupMusic = document.getElementById('setupMusicElement');
-                    if (setupMusic) {
-                        setupMusic.pause();
-                        setupMusic.currentTime = 0;
+                    const loadingMusic = document.getElementById('loadingMusicElement');
+                    if (loadingMusic) {
+                        loadingMusic.pause();
+                        loadingMusic.currentTime = 0;
                     }
                 }, 1500);
                 document.getElementById('gameContainer').innerHTML = 
