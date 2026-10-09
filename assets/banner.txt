@@ -1,0 +1,1 @@
+Heads up! I have disabled the icon fetcher API due to content not appropriate for all ages and for the sake of accuracy.
