@@ -136,6 +136,19 @@
                     <input type="color" id="setupAccent" value="#f9fafb" class="w-10 h-10 cursor-pointer bg-transparent border-0 p-0" oninput="previewAccent(this.value)">
                 </div>
 
+                <!-- Launch Mode -->
+                <div class="flex items-center justify-between">
+                    <div>
+                        <span class="text-gray-900 dark:text-white text-base font-bold block">launch mode</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-sm">how should games open?</span>
+                    </div>
+                    <select id="setupLaunchMode" class="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm block p-2.5 outline-none font-bold">
+                        <option value="cloak">stealth (about:blank)</option>
+                        <option value="modal">in-app (modal)</option>
+                        <option value="direct">direct link</option>
+                    </select>
+                </div>
+
                 <!-- AI Formatter -->
                 <div class="flex items-center justify-between">
                     <div>
@@ -227,6 +240,18 @@
                         <span class="text-gray-500 dark:text-gray-400 text-sm">pick a custom highlight color.</span>
                     </div>
                     <input type="color" id="settingAccent" class="w-10 h-10 cursor-pointer bg-transparent border-0 p-0" oninput="previewAccent(this.value)" onchange="saveSettings()">
+                </div>
+
+                <div class="flex items-center justify-between p-5 bg-gray-50 dark:bg-cardbg border border-gray-100 dark:border-gray-800 shadow-sm">
+                    <div>
+                        <span class="text-gray-900 dark:text-white text-base font-bold block">launch mode</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-sm">how should games open?</span>
+                    </div>
+                    <select id="settingLaunchMode" onchange="saveSettings()" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm block p-2 outline-none font-bold shadow-sm">
+                        <option value="cloak">stealth (about:blank)</option>
+                        <option value="modal">in-app (modal)</option>
+                        <option value="direct">direct link</option>
+                    </select>
                 </div>
 
                 <div class="flex items-center justify-between p-5 bg-gray-50 dark:bg-cardbg border border-gray-100 dark:border-gray-800 shadow-sm">
@@ -352,7 +377,8 @@
             games: [], topLevelFolders: [], currentFolder: null, searchQuery: '', featuredGames: [],
             settings: {
                 theme: 'light', accentColor: '#111827',
-                aiRenamerEnabled: true, hoverSoundsEnabled: true, globalMusicEnabled: false
+                aiRenamerEnabled: true, hoverSoundsEnabled: true, globalMusicEnabled: false,
+                gameLaunchMode: 'cloak'
             },
             appStarted: false,
             setupCompleted: false
@@ -471,6 +497,7 @@
             document.getElementById('toggleMusic').checked = state.settings.globalMusicEnabled;
             document.getElementById('settingTheme').value = state.settings.theme;
             document.getElementById('settingAccent').value = state.settings.accentColor;
+            if(document.getElementById('settingLaunchMode')) document.getElementById('settingLaunchMode').value = state.settings.gameLaunchMode || 'cloak';
         }
 
         function saveSettings() {
@@ -480,6 +507,7 @@
             state.settings.hoverSoundsEnabled = document.getElementById('toggleSound').checked;
             state.settings.globalMusicEnabled = document.getElementById('toggleMusic').checked;
             state.settings.accentColor = document.getElementById('settingAccent').value;
+            if(document.getElementById('settingLaunchMode')) state.settings.gameLaunchMode = document.getElementById('settingLaunchMode').value;
             
             localStorage.setItem('centauri_settings', JSON.stringify(state.settings));
             manageGlobalMusic();
@@ -511,6 +539,7 @@
                 // sync modal with current state
                 document.getElementById('settingTheme').value = state.settings.theme;
                 document.getElementById('settingAccent').value = state.settings.accentColor;
+                if(document.getElementById('settingLaunchMode')) document.getElementById('settingLaunchMode').value = state.settings.gameLaunchMode || 'cloak';
                 document.getElementById('toggleAI').checked = state.settings.aiRenamerEnabled;
                 document.getElementById('toggleSound').checked = state.settings.hoverSoundsEnabled;
                 document.getElementById('toggleMusic').checked = state.settings.globalMusicEnabled;
@@ -597,6 +626,7 @@
                 // Sync UI with defaults
                 document.getElementById('setupTheme').value = state.settings.theme;
                 document.getElementById('setupAccent').value = state.settings.accentColor;
+                if(document.getElementById('setupLaunchMode')) document.getElementById('setupLaunchMode').value = state.settings.gameLaunchMode || 'cloak';
                 document.getElementById('setupAI').checked = state.settings.aiRenamerEnabled;
                 document.getElementById('setupSound').checked = state.settings.hoverSoundsEnabled;
                 document.getElementById('setupMusic').checked = state.settings.globalMusicEnabled;
@@ -611,6 +641,7 @@
             if (!skipped) {
                 state.settings.theme = document.getElementById('setupTheme').value;
                 state.settings.accentColor = document.getElementById('setupAccent').value;
+                if(document.getElementById('setupLaunchMode')) state.settings.gameLaunchMode = document.getElementById('setupLaunchMode').value;
                 state.settings.aiRenamerEnabled = document.getElementById('setupAI').checked;
                 state.settings.hoverSoundsEnabled = document.getElementById('setupSound').checked;
                 state.settings.globalMusicEnabled = document.getElementById('setupMusic').checked;
@@ -1030,46 +1061,68 @@
             playPressSound();
             fadeOutGlobalMusic();
             
-            // Attempt to open the game in an about:blank cloaked tab
-            const win = window.open('about:blank', '_blank');
-            
-            if (win) {
-                // Stealth Mode: Disguise the tab as Google
-                win.document.title = "Google"; 
+            const mode = state.settings.gameLaunchMode || 'cloak';
+
+            if (mode === 'direct') {
+                const win = window.open(url, '_blank');
+                if (win) {
+                    const checkInterval = setInterval(() => {
+                        if (win.closed) {
+                            clearInterval(checkInterval);
+                            fadeInGlobalMusic();
+                        }
+                    }, 500);
+                } else {
+                    openInModal(url, title);
+                }
+            } else if (mode === 'cloak') {
+                // Attempt to open the game in an about:blank cloaked tab
+                const win = window.open('about:blank', '_blank');
                 
-                const favicon = win.document.createElement('link');
-                favicon.rel = 'icon';
-                favicon.href = 'https://www.google.com/favicon.ico';
-                win.document.head.appendChild(favicon);
-                
-                win.document.body.style.margin = '0';
-                win.document.body.style.overflow = 'hidden';
-                win.document.body.style.backgroundColor = '#000';
-                
-                const iframe = win.document.createElement('iframe');
-                iframe.src = url;
-                iframe.style.width = '100vw';
-                iframe.style.height = '100vh';
-                iframe.style.border = 'none';
-                iframe.allowFullscreen = true;
-                
-                win.document.body.appendChild(iframe);
-                
-                // Monitor the tab: resume global music when they close the game
-                const checkInterval = setInterval(() => {
-                    if (win.closed) {
-                        clearInterval(checkInterval);
-                        fadeInGlobalMusic();
-                    }
-                }, 500);
+                if (win) {
+                    // Stealth Mode: Disguise the tab as Google
+                    win.document.title = "Google"; 
+                    
+                    const favicon = win.document.createElement('link');
+                    favicon.rel = 'icon';
+                    favicon.href = 'https://www.google.com/favicon.ico';
+                    win.document.head.appendChild(favicon);
+                    
+                    win.document.body.style.margin = '0';
+                    win.document.body.style.overflow = 'hidden';
+                    win.document.body.style.backgroundColor = '#000';
+                    
+                    const iframe = win.document.createElement('iframe');
+                    iframe.src = url;
+                    iframe.style.width = '100vw';
+                    iframe.style.height = '100vh';
+                    iframe.style.border = 'none';
+                    iframe.allowFullscreen = true;
+                    
+                    win.document.body.appendChild(iframe);
+                    
+                    // Monitor the tab: resume global music when they close the game
+                    const checkInterval = setInterval(() => {
+                        if (win.closed) {
+                            clearInterval(checkInterval);
+                            fadeInGlobalMusic();
+                        }
+                    }, 500);
+                } else {
+                    openInModal(url, title);
+                }
             } else {
-                // Fallback: If pop-ups are blocked, use the internal modal
-                document.getElementById('modalTitle').textContent = title.toLowerCase();
-                document.getElementById('gameModal').classList.remove('hidden');
-                document.body.classList.add('overflow-hidden');
-                
-                document.getElementById('gameIframe').src = url;
+                openInModal(url, title);
             }
+        }
+
+        function openInModal(url, title) {
+            // Fallback: If pop-ups are blocked, use the internal modal
+            document.getElementById('modalTitle').textContent = title.toLowerCase();
+            document.getElementById('gameModal').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            
+            document.getElementById('gameIframe').src = url;
         }
 
         function closeGame() {
@@ -1139,3 +1192,4 @@
     </script>
 </body>
 </html>
+
