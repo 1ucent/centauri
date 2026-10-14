@@ -443,7 +443,7 @@
                     </div>
                     <select id="setupLaunchMode" class="px-4 py-2 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 font-bold text-sm">
                         <option value="window">floating os window (multitask)</option>
-                        <option value="cloak">stealth tab (about:blank)</option>
+                        <option value="cloak">new tab (about:blank)</option>
                         <option value="modal">fullscreen os modal</option>
                         <option value="direct">direct browser tab</option>
                     </select>
@@ -474,11 +474,11 @@
                 </div>
             </div>
 
-            <!-- Step 3: Stealth Decoy & Cloak -->
+            <!-- Step 3: Fan Decoy -->
             <div id="setupStep3" class="space-y-4 overflow-y-auto custom-scrollbar pr-1 flex-grow hidden">
                 <div class="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30 text-xs text-indigo-900 dark:text-indigo-300 leading-relaxed">
                     <i class="fa-solid fa-user-secret mr-1.5 text-indigo-600 dark:text-indigo-400"></i>
-                    <strong>Administrator Bypass Tip:</strong> Pressing the <kbd class="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white font-mono">~</kbd> (tilde) key or clicking the Fan icon on the shelf instantly flips Centauri into the <strong>AeroVane Ceiling Fans</strong> website. Double-click the phone number at the bottom of the fan site to return immediately!
+                    <strong>Quick Tip:</strong> Pressing the <kbd class="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white font-mono">~</kbd> (tilde) key or clicking the Fan icon on the shelf instantly flips Centauri into the <strong>AeroVane Ceiling Fans</strong> website. Double-click the phone number at the bottom of the fan site to return immediately!
                 </div>
 
                 <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 flex items-center justify-between">
@@ -830,7 +830,7 @@
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
             <h2 class="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">centauri os settings</h2>
-            <p class="text-slate-500 dark:text-slate-400 mb-6 text-sm">configure personalization, stealth decoy, chromebook app mode, and audio.</p>
+            <p class="text-slate-500 dark:text-slate-400 mb-6 text-sm">configure personalization, fan decoy, chromebook app mode, and audio.</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[65dvh] overflow-y-auto custom-scrollbar pr-1">
                 <!-- Appearance -->
@@ -862,7 +862,7 @@
                     </div>
                     <select id="settingLaunchMode" onchange="saveSettings()" class="px-3 py-2 rounded-xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 font-bold text-sm">
                         <option value="window">os window</option>
-                        <option value="cloak">stealth (about:blank)</option>
+                        <option value="cloak">new tab (about:blank)</option>
                         <option value="modal">in-app (modal)</option>
                         <option value="direct">direct link</option>
                     </select>
@@ -1546,7 +1546,7 @@
             const labels = [
                 "step 1 of 4 • personalization",
                 "step 2 of 4 • game engine & audio",
-                "step 3 of 4 • stealth & decoy cloak",
+                "step 3 of 4 • fan decoy",
                 "step 4 of 4 • chromebook web app"
             ];
             document.getElementById('setupStepLabel').textContent = labels[nextStep - 1];
@@ -2075,7 +2075,7 @@
                     </div>
                     <div class="flex items-center gap-1.5" onmousedown="event.stopPropagation()">
                         <button onclick="copyDirectGameUrl('${safeUrl}')" class="w-7 h-7 rounded-xl hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs" title="Copy Game Link"><i class="fa-solid fa-link"></i></button>
-                        <button onclick="popoutGameToCloak('${safeUrl}')" class="w-7 h-7 rounded-xl hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs" title="Open in Stealth Tab (about:blank)"><i class="fa-solid fa-user-secret"></i></button>
+                        <button onclick="popoutGameToCloak('${safeUrl}')" class="w-7 h-7 rounded-xl hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs" title="Open in New Tab (about:blank)"><i class="fa-solid fa-user-secret"></i></button>
                         <button onclick="document.getElementById('iframe-${winId}').requestFullscreen()" class="w-7 h-7 rounded-xl hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs" title="Fullscreen"><i class="fa-solid fa-expand"></i></button>
                         <button onclick="toggleMaximizeOSWindow('${winId}')" class="w-7 h-7 rounded-xl hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 flex items-center justify-center text-xs" title="Maximize"><i class="fa-regular fa-square"></i></button>
                         <button onclick="document.getElementById('${winId}').remove(); manageGlobalMusic();" class="w-7 h-7 rounded-xl hover:bg-rose-500 text-slate-600 dark:text-slate-300 hover:text-white flex items-center justify-center text-xs" title="Close"><i class="fa-solid fa-xmark"></i></button>
@@ -2383,7 +2383,7 @@
             } else if (cmd === 'clear') {
                 out.innerHTML = '';
             } else if (cmd === 'whoami') {
-                out.innerHTML += `<div>chromebook-admin-bypasser</div>`;
+                out.innerHTML += `<div>centauri-user</div>`;
             } else if (cmd === 'date') {
                 out.innerHTML += `<div>${new Date().toString()}</div>`;
             } else if (cmd === 'theme') {
