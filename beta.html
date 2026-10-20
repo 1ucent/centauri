@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="referrer" content="no-referrer">
+    <title>Centauri OS — macOS Tahoe (Visual UI Test)</title>
+    <link rel="icon" type="image/png" href="https://placehold.co/64x64/0284c7/ffffff.png?text=C">
+    <meta name="theme-color" content="#0284c7">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"SF Pro Display"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace']
+                    },
+                    borderRadius: {
+                        'tahoe': '1.25rem',
+                        'tahoe-lg': '1.75rem'
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            overflow: hidden;
+            background-color: #f1f5f9;
+            cursor: default;
+        }
+        html.dark body { background-color: #0b1329; }
+
+        button, a, input, select, .cursor-pointer { cursor: pointer; }
+
+        /* APPLE LIQUID GLASS OPTICAL ENGINE (NON-DISTORTING) */
+        .tahoe-liquid-glass {
+            background: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.88) 0%,
+                rgba(255, 255, 255, 0.65) 50%,
+                rgba(255, 255, 255, 0.78) 100%
+            );
+            backdrop-filter: blur(28px) saturate(220%) contrast(1.05);
+            -webkit-backdrop-filter: blur(28px) saturate(220%) contrast(1.05);
+            box-shadow:
+                0 40px 80px -15px rgba(15, 23, 42, 0.18),
+                inset 0 2px 1.5px 0 rgba(255, 255, 255, 0.98),
+                inset 0 -2px 3px 0 rgba(255, 255, 255, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.9) !important;
+            position: relative;
+        }
+
+        html.dark .tahoe-liquid-glass {
+            background: linear-gradient(
+                135deg,
+                rgba(30, 41, 59, 0.68) 0%,
+                rgba(15, 23, 42, 0.52) 50%,
+                rgba(30, 41, 59, 0.6) 100%
+            );
+            backdrop-filter: blur(30px) saturate(240%) brightness(1.15);
+            -webkit-backdrop-filter: blur(30px) saturate(240%) brightness(1.15);
+            box-shadow:
+                0 45px 90px -20px rgba(0, 0, 0, 0.65),
+                inset 0 2px 1.5px 0 rgba(255, 255, 255, 0.28),
+                inset 0 -2px 3px 0 rgba(255, 255, 255, 0.1),
+                0 0 0 1px rgba(255, 255, 255, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.18) !important;
+        }
+
+        .tahoe-liquid-glass::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            background: radial-gradient(circle at 15% 15%, rgba(255,255,255,0.75) 0%, transparent 40%);
+        }
+
+        .tahoe-squircle {
+            aspect-ratio: 1 / 1;
+            flex-shrink: 0;
+            border-radius: 24%;
+            box-shadow: 0 14px 28px -6px rgba(0,0,0,0.22), inset 0 2px 1.5px rgba(255,255,255,0.7);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+        }
+        .tahoe-squircle:hover {
+            transform: translateY(-6px) scale(1.1);
+            box-shadow: 0 22px 38px -8px rgba(0,0,0,0.32), inset 0 2.5px 2px rgba(255,255,255,0.9);
+        }
+
+        .wallpaper-tahoe {
+            background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2560&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(148, 163, 184, 0.35); border-radius: 9999px; }
+
+        .fade-in { animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* MAC OS BOOT & LOGIN SCREEN */
+        #macBootScreen {
+            position: fixed;
+            inset: 0;
+            background-color: #000000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.25s ease-in-out;
+        }
+        .boot-centauri-logo {
+            width: 92px;
+            height: 92px;
+            filter: drop-shadow(0 0 28px rgba(255,255,255,0.55));
+        }
+        #launchpadOverlay {
+            backdrop-filter: blur(35px) saturate(190%);
+            -webkit-backdrop-filter: blur(35px) saturate(190%);
+            background: rgba(15, 23, 42, 0.45);
+        }
+    </style>
+</head>
+
+<body class="text-slate-900 dark:text-slate-100 h-[100dvh] w-screen overflow-hidden relative select-none">
+
+    <!-- MAC OS BOOT & LOGIN SCREEN -->
+    <div id="macBootScreen">
+        <div id="bootLogoContainer" class="flex flex-col items-center">
+            <img class="centauri-brand-logo boot-centauri-logo object-contain" alt="Centauri Logo" src="" />
+        </div>
+        <div id="loginScreenContainer" class="hidden opacity-0 transition-opacity duration-300 flex-col items-center justify-center space-y-6">
+            <button onclick="dismissLoginScreen()" class="px-8 py-3 rounded-full bg-white/15 hover:bg-white/25 text-white font-semibold text-sm backdrop-blur-md border border-white/30 shadow-2xl transition-all active:scale-95">
+                Log In
+            </button>
+        </div>
+    </div>
+
+    <!-- SVG Optical Liquid Refraction Filter -->
+    <svg class="pointer-events-none fixed w-0 h-0 overflow-hidden" aria-hidden="true">
+        <defs>
+            <filter id="liquidEdgeWarp" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+                <feImage id="liquidLensMapImage" x="0%" y="0%" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" result="lensMap" />
+                <feDisplacementMap id="liquidDisplacementNode" in="SourceGraphic" in2="lensMap" scale="0" xChannelSelector="R" yChannelSelector="G" result="refracted" />
+            </filter>
+        </defs>
+    </svg>
+
+    <!-- DESKTOP ENVIRONMENT -->
+    <div id="desktopEnvironment" class="fixed inset-0 wallpaper-tahoe flex flex-col overflow-hidden transition-all duration-500">
+        
+        <!-- macOS Tahoe Top Menu Bar -->
+        <div id="topMenuBar" class="h-8 px-4 tahoe-liquid-glass z-[50] flex items-center justify-between text-xs font-semibold text-slate-800 dark:text-slate-200 border-b border-white/40">
+            <div class="flex items-center gap-4">
+                <span class="flex items-center gap-2 font-bold text-slate-900 dark:text-white cursor-pointer hover:opacity-80" onclick="toggleLaunchpad()">
+                    <span class="w-4 h-4 rounded-md bg-slate-900 dark:bg-white/15 flex items-center justify-center p-0.5 shadow-sm">
+                        <img class="centauri-brand-logo w-3.5 h-3.5 object-contain" alt="Centauri" src="" />
+                    </span>
+                    <span>Centauri OS</span>
+                </span>
+                <span id="topMenuAppTitle" class="text-slate-700 dark:text-slate-300 font-bold">Finder</span>
+                <span onclick="openAddWebAppModal()" class="hidden sm:inline text-slate-600 dark:text-slate-300 hover:text-sky-500 cursor-pointer">+ Add Web App</span>
+                <span onclick="toggleLaunchpad()" class="hidden sm:inline text-slate-600 dark:text-slate-300 hover:text-sky-500 cursor-pointer">Launchpad</span>
+                <span onclick="openApp('Centauri AI')" class="hidden sm:inline text-slate-600 dark:text-slate-300 hover:text-sky-500 cursor-pointer">Centauri AI</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span id="topBatteryDisplay" class="text-slate-700 dark:text-slate-300"><i class="fa-solid fa-battery-full mr-1"></i>100%</span>
+                <span id="topClockDisplay" class="font-bold text-slate-800 dark:text-slate-100">Tue Oct 20 7:28 AM</span>
+                <button onclick="toggleQuickSettings()" class="hover:text-sky-500 transition-colors" title="Control Center"><i class="fa-solid fa-sliders"></i></button>
+            </div>
+        </div>
+
+        <!-- Desktop Grid & Windows Surface -->
+        <div id="desktopSurface" class="relative flex-1 w-full overflow-hidden p-6" oncontextmenu="handleDesktopRightClick(event)">
+            <!-- Desktop Shortcut Icons Grid -->
+            <div id="desktopIconsGrid" class="grid grid-flow-col auto-rows-max gap-6 w-max h-full content-start items-start"></div>
+
+            <!-- Floating Windows Layer -->
+            <div id="floatingWindowsLayer"></div>
+        </div>
+
+        <!-- macOS Dock (Bottom) -->
+        <div id="bottomDockWrapper" class="px-4 pb-3 pt-1 z-[200] flex items-center justify-center shrink-0 pointer-events-none">
+            <div id="bottomDockContainer" class="pointer-events-auto tahoe-liquid-glass px-3.5 py-2 rounded-3xl border border-white/60 shadow-2xl flex items-center gap-3 overflow-x-auto max-w-[95vw] custom-scrollbar"></div>
+        </div>
+    </div>
+
+    <!-- macOS Launchpad Overlay -->
+    <div id="launchpadOverlay" class="fixed inset-0 z-[400] hidden flex-col items-center pt-14 pb-24 px-8 fade-in" onclick="if(event.target === this) toggleLaunchpad()">
+        <div class="w-full max-w-md mb-10 flex items-center gap-3 px-4 py-2.5 rounded-2xl bg-white/20 border border-white/30 text-white shadow-xl">
+            <i class="fa-solid fa-magnifying-glass text-white/70 text-sm"></i>
+            <input id="launchpadSearchInput" type="text" oninput="renderLaunchpadApps(this.value)" placeholder="Search Applications & Web Apps..." class="w-full bg-transparent text-sm text-white placeholder-white/70 outline-none font-medium" />
+            <button onclick="openAddWebAppModal()" class="px-3 py-1 rounded-xl bg-sky-500 hover:bg-sky-400 text-white text-xs font-bold shrink-0 shadow">+ Add App</button>
+        </div>
+        <div id="launchpadGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-8 max-w-5xl w-full place-items-center overflow-y-auto custom-scrollbar p-4"></div>
+    </div>
+
+    <!-- Add Web App Modal -->
+    <div id="addWebAppModal" class="fixed inset-0 z-[450] bg-slate-950/50 backdrop-blur-md hidden items-center justify-center p-4 fade-in" onclick="if(event.target === this) closeAddWebAppModal()">
+        <div class="w-full max-w-md tahoe-liquid-glass rounded-tahoe-lg p-6 shadow-2xl text-slate-900 dark:text-white space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-300/60 dark:border-white/10 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-sky-500 text-white flex items-center justify-center shadow">
+                        <i class="fa-solid fa-plus"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm">Add Custom Web App</h3>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-300">Auto-fetches domain favicon by default</p>
+                    </div>
+                </div>
+                <button onclick="closeAddWebAppModal()" class="w-7 h-7 rounded-full bg-slate-200 dark:bg-white/10 flex items-center justify-center text-xs"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold mb-1">App Title (Optional)</label>
+                    <input id="newWebAppName" type="text" placeholder="e.g. YouTube, Discord, GeForce NOW" class="w-full px-3.5 py-2 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-slate-300 dark:border-white/15 outline-none" />
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Website Domain or URL <span class="text-rose-500">*</span></label>
+                    <input id="newWebAppDomain" type="text" oninput="previewWebAppFavicon(this.value)" placeholder="e.g. wikipedia.org or https://example.com" class="w-full px-3.5 py-2 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-slate-300 dark:border-white/15 outline-none" />
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Custom Logo URL (Optional — uses site Favicon if blank)</label>
+                    <div class="flex items-center gap-2.5">
+                        <input id="newWebAppIcon" type="text" oninput="previewWebAppFavicon(document.getElementById('newWebAppDomain').value)" placeholder="https://example.com/logo.png" class="flex-1 px-3.5 py-2 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-slate-300 dark:border-white/15 outline-none" />
+                        <div class="w-9 h-9 rounded-xl bg-slate-800/90 border border-white/20 flex items-center justify-center overflow-hidden shrink-0 shadow">
+                            <img id="newWebAppPreviewImg" src="https://www.google.com/s2/favicons?sz=128&domain=centaurrii.com" class="w-6 h-6 object-contain" alt="Icon Preview" />
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between pt-1">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input id="newWebAppPinDock" type="checkbox" checked class="accent-sky-500 w-4 h-4" />
+                        <span class="font-medium">Pin to Dock & Desktop</span>
+                    </label>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeAddWebAppModal()" class="px-4 py-2 rounded-xl bg-slate-200/80 dark:bg-white/10 text-xs font-semibold">Cancel</button>
+                <button onclick="saveCustomWebApp()" class="px-5 py-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white text-xs font-bold shadow-lg">Add Web App</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Settings / Control Center Pod -->
+    <div id="quickSettingsPod" class="fixed top-10 right-4 z-[300] w-80 tahoe-liquid-glass rounded-tahoe-lg p-5 shadow-2xl hidden fade-in text-slate-900 dark:text-white">
+        <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-300 dark:border-white/10">
+            <span class="font-bold text-sm">Control Center</span>
+            <button onclick="toggleQuickSettings()" class="w-6 h-6 rounded-full bg-slate-200 dark:bg-white/10 flex items-center justify-center text-xs"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="space-y-4 text-xs">
+            <div class="flex items-center justify-between">
+                <span class="font-medium">Dark Liquid Glass</span>
+                <input type="checkbox" id="quickThemeToggle" onchange="toggleQuickTheme()" class="w-4 h-4 accent-sky-500 cursor-pointer">
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="font-medium">Battery Status</span>
+                <span id="quickBatteryStatus" class="font-mono font-bold text-sky-500">100% (Charging)</span>
+            </div>
+            <div class="flex flex-col space-y-1">
+                <div class="flex justify-between font-medium"><span>Optical Edge Warping Intensity</span></div>
+                <input type="range" min="0" max="50" value="26" oninput="document.getElementById('liquidDisplacementNode').setAttribute('scale', this.value)" class="w-full accent-sky-500">
+            </div>
+            <button onclick="openAddWebAppModal(); toggleQuickSettings();" class="w-full py-2 rounded-xl bg-sky-500 text-white font-bold shadow hover:bg-sky-600 transition-colors">
+                + Install Web App by Domain
+            </button>
+        </div>
+    </div>
+
+    <!-- Desktop Context Menu -->
+    <div id="desktopContextMenu" class="fixed z-[350] w-52 tahoe-liquid-glass rounded-2xl p-1.5 shadow-2xl text-xs font-bold hidden fade-in text-slate-900 dark:text-white">
+        <button onclick="toggleLaunchpad(); hideContextMenu();" class="w-full px-3 py-2 rounded-xl hover:bg-sky-500 hover:text-white text-left transition-colors flex items-center gap-2.5"><i class="fa-solid fa-rocket text-sky-500"></i>Open Launchpad</button>
+        <button onclick="openAddWebAppModal(); hideContextMenu();" class="w-full px-3 py-2 rounded-xl hover:bg-sky-500 hover:text-white text-left transition-colors flex items-center gap-2.5"><i class="fa-solid fa-plus text-emerald-500"></i>Add Custom Web App</button>
+        <button onclick="openApp('Centauri AI'); hideContextMenu();" class="w-full px-3 py-2 rounded-xl hover:bg-sky-500 hover:text-white text-left transition-colors flex items-center gap-2.5"><i class="fa-solid fa-wand-magic-sparkles text-purple-500"></i>Ask Centauri AI</button>
+        <button onclick="openApp('Proxy Client'); hideContextMenu();" class="w-full px-3 py-2 rounded-xl hover:bg-sky-500 hover:text-white text-left transition-colors flex items-center gap-2.5"><i class="fa-solid fa-globe text-cyan-500"></i>Open Proxy Client</button>
+        <button onclick="openApp('Settings'); hideContextMenu();" class="w-full px-3 py-2 rounded-xl hover:bg-sky-500 hover:text-white text-left transition-colors flex items-center gap-2.5"><i class="fa-solid fa-gear text-slate-500"></i>OS Settings & Logo</button>
+    </div>
+
+    <script>
+        // Default crisp White Centauri Vector Emblem (can be overridden by user's custom image in Settings)
+        const DEFAULT_WHITE_CENTAURI_LOGO = "data:image/svg+xml;utf8," + encodeURIComponent(`
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+                <circle cx="60" cy="60" r="46" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-dasharray="210 90" transform="rotate(-35 60 60)"/>
+                <path d="M82 43C76.5 36.5 68.5 32.5 59.5 32.5C43.5 32.5 30.5 45.5 30.5 61.5C30.5 77.5 43.5 90.5 59.5 90.5C69 90.5 77.3 86 82.6 79" stroke="#ffffff" stroke-width="9" stroke-linecap="round"/>
+                <circle cx="60" cy="60" r="10" fill="#ffffff"/>
+                <circle cx="93" cy="34" r="5.5" fill="#ffffff"/>
+            </svg>
+        `);
+
+        let customLogoDataUrl = DEFAULT_WHITE_CENTAURI_LOGO;
+        let topZIndex = 70;
+        let windowOffsetsCount = 0;
+
+        // Core System Applications + User Installed Web Apps
+        const systemApps = [
+            { id: 'launchpad', name: 'Launchpad', iconType: 'centauri-logo', bg: 'from-slate-900 via-slate-800 to-sky-950', action: () => toggleLaunchpad(), pinned: true, desktop: false },
+            { id: 'ai', name: 'Centauri AI', icon: 'fa-wand-magic-sparkles', bg: 'from-violet-600 to-indigo-600', pinned: true, desktop: true },
+            { id: 'proxy', name: 'Proxy Client', icon: 'fa-globe', bg: 'from-cyan-500 to-blue-600', pinned: true, desktop: true },
+            { id: 'gamehub', name: 'Game Hub', icon: 'fa-gamepad', bg: 'from-indigo-500 to-purple-600', pinned: true, desktop: true },
+            { id: 'terminal', name: 'Terminal', icon: 'fa-terminal', bg: 'from-slate-900 to-slate-800 text-emerald-400', pinned: true, desktop: true },
+            { id: 'notes', name: 'Notes', icon: 'fa-note-sticky', bg: 'from-amber-400 to-orange-500', pinned: true, desktop: true },
+            { id: 'music', name: 'Music Studio', icon: 'fa-headphones', bg: 'from-rose-500 to-red-600', pinned: true, desktop: false },
+            { id: 'addwebapp', name: 'Add Web App', icon: 'fa-plus', bg: 'from-emerald-500 to-teal-600', action: () => openAddWebAppModal(), pinned: true, desktop: true },
+            { id: 'settings', name: 'Settings', icon: 'fa-gear', bg: 'from-sky-400 to-blue-600', pinned: true, desktop: false }
+        ];
+
+        let customWebApps = [
+            {
+                id: 'web-wikipedia',
+                name: 'Wikipedia',
+                domain: 'https://en.wikipedia.org',
+                iconUrl: 'https://www.google.com/s2/favicons?sz=128&domain=wikipedia.org',
+                pinned: true,
+                desktop: true
+            }
+        ];
+
+        let savedNotesContent = "Welcome to Centauri OS (macOS Tahoe Edition)!\n\n• Click the White Centauri Logo in the dock or top-left menu to open Launchpad.\n• Click '+ Add Web App' to add any website by domain (auto-fetches its favicon!).\n• Open Settings to upload your own custom White Centauri Logo image.";
+        let aiConversationHistory = [];
+
+        function applyBrandLogos() {
+            document.querySelectorAll('.centauri-brand-logo').forEach(img => {
+                img.src = customLogoDataUrl;
+            });
+        }
+
+        function updateCustomBrandLogo(urlOrBase64) {
+            if (!urlOrBase64) return;
+            customLogoDataUrl = urlOrBase64.trim();
+            applyBrandLogos();
+            renderDesktopAndDock();
+        }
+
+        function handleLogoFileUpload(input) {
+            const file = input.files && input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                updateCustomBrandLogo(evt.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function normalizeDomainUrl(raw) {
+            let clean = (raw || '').trim();
+            if (!clean) return '';
+            if (!/^https?:\/\//i.test(clean)) {
+                clean = 'https://' + clean;
+            }
+            return clean;
+        }
+
+        function getFaviconFromDomain(rawUrl, customIcon) {
+            if (customIcon && customIcon.trim() !== '') {
+                return customIcon.trim();
+            }
+            try {
+                const parsed = new URL(normalizeDomainUrl(rawUrl));
+                return `https://www.google.com/s2/favicons?sz=128&domain=${encodeURIComponent(parsed.hostname)}`;
+            } catch (err) {
+                return 'https://www.google.com/s2/favicons?sz=128&domain=centaurrii.com';
+            }
+        }
+
+        function previewWebAppFavicon(domainVal) {
+            const customIcon = document.getElementById('newWebAppIcon')?.value || '';
+            const previewEl = document.getElementById('newWebAppPreviewImg');
+            if (previewEl) {
+                previewEl.src = getFaviconFromDomain(domainVal || 'centaurrii.com', customIcon);
+            }
+        }
+
+        function openAddWebAppModal() {
+            const modal = document.getElementById('addWebAppModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeAddWebAppModal() {
+            const modal = document.getElementById('addWebAppModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function saveCustomWebApp() {
+            const rawDomain = document.getElementById('newWebAppDomain').value.trim();
+            if (!rawDomain) return;
+
+            const fullUrl = normalizeDomainUrl(rawDomain);
+            let hostname = rawDomain;
+            try {
+                hostname = new URL(fullUrl).hostname.replace(/^www\./, '');
+            } catch (e) {}
+
+            const rawName = document.getElementById('newWebAppName').value.trim();
+            const appName = rawName || (hostname.charAt(0).toUpperCase() + hostname.slice(1).split('.')[0]);
+            const rawIcon = document.getElementById('newWebAppIcon').value.trim();
+            const pinToDock = document.getElementById('newWebAppPinDock').checked;
+
+            const newApp = {
+                id: 'webapp-' + Date.now(),
+                name: appName,
+                domain: fullUrl,
+                iconUrl: getFaviconFromDomain(fullUrl, rawIcon),
+                pinned: pinToDock,
+                desktop: pinToDock
+            };
+
+            customWebApps.push(newApp);
+            document.getElementById('newWebAppName').value = '';
+            document.getElementById('newWebAppDomain').value = '';
+            document.getElementById('newWebAppIcon').value = '';
+            closeAddWebAppModal();
+            renderDesktopAndDock();
+            renderLaunchpadApps();
+            openCustomWebAppWindow(newApp);
+        }
+
+        function renderDesktopAndDock() {
+            const desktopGrid = document.getElementById('desktopIconsGrid');
+            const dockContainer = document.getElementById('bottomDockContainer');
+            if (!desktopGrid || !dockContainer) return;
+
+            desktopGrid.innerHTML = '';
+            dockContainer.innerHTML = '';
+
+            // Render Desktop Shortcuts
+            systemApps.filter(a => a.desktop).forEach(app => {
+                const item = document.createElement('div');
+                item.onclick = () => app.action ? app.action() : openApp(app.name);
+                item.className = 'flex flex-col items-center gap-1.5 cursor-pointer group w-20 shrink-0';
+                item.innerHTML = `
+                    <div class="tahoe-squircle w-14 h-14 aspect-square shrink-0 bg-gradient-to-br ${app.bg} text-white flex items-center justify-center text-2xl shadow-xl">
+                        <i class="fa-solid ${app.icon}"></i>
+                    </div>
+                    <span class="text-[11px] font-bold text-slate-900 dark:text-white bg-white/45 dark:bg-slate-900/45 px-2 py-0.5 rounded-full backdrop-blur-sm text-center line-clamp-1">${app.name}</span>
+                `;
+                desktopGrid.appendChild(item);
+            });
+
+            customWebApps.filter(a => a.desktop).forEach(webapp => {
+                const item = document.createElement('div');
+                item.onclick = () => openCustomWebAppWindow(webapp);
+                item.className = 'flex flex-col items-center gap-1.5 cursor-pointer group w-20 shrink-0';
+                item.innerHTML = `
+                    <div class="tahoe-squircle w-14 h-14 aspect-square shrink-0 bg-white/90 dark:bg-slate-900/90 border border-white/40 flex items-center justify-center p-2.5 shadow-xl">
+                        <img src="${webapp.iconUrl}" onerror="this.src='https://www.google.com/s2/favicons?sz=128&domain=centaurrii.com'" class="w-9 h-9 aspect-square object-contain rounded-lg" alt="${webapp.name}" />
+                    </div>
+                    <span class="text-[11px] font-bold text-slate-900 dark:text-white bg-white/45 dark:bg-slate-900/45 px-2 py-0.5 rounded-full backdrop-blur-sm text-center line-clamp-1">${webapp.name}</span>
+                `;
+                desktopGrid.appendChild(item);
+            });
+
+            // Render Bottom Dock (First item is White Centauri Logo Launchpad button)
+            systemApps.filter(a => a.pinned).forEach(app => {
+                const btn = document.createElement('button');
+                btn.onclick = () => app.action ? app.action() : openApp(app.name);
+                btn.className = `tahoe-squircle w-12 h-12 aspect-square bg-gradient-to-br ${app.bg} text-white flex items-center justify-center text-xl shadow-md shrink-0`;
+                btn.title = app.name;
+                if (app.iconType === 'centauri-logo') {
+                    btn.innerHTML = `<img class="centauri-brand-logo w-7 h-7 aspect-square object-contain" src="${customLogoDataUrl}" alt="Centauri Launchpad" />`;
+                } else {
+                    btn.innerHTML = `<i class="fa-solid ${app.icon}"></i>`;
+                }
+                dockContainer.appendChild(btn);
+            });
+
+            if (customWebApps.some(a => a.pinned)) {
+                const divider = document.createElement('div');
+                divider.className = 'w-[1px] h-8 bg-slate-400/40 dark:bg-white/20 mx-0.5 shrink-0';
+                dockContainer.appendChild(divider);
+
+                customWebApps.filter(a => a.pinned).forEach(webapp => {
+                    const btn = document.createElement('button');
+                    btn.onclick = () => openCustomWebAppWindow(webapp);
+                    btn.className = 'tahoe-squircle w-12 h-12 aspect-square bg-white/90 dark:bg-slate-900/90 border border-white/40 flex items-center justify-center p-2 shadow-md shrink-0';
+                    btn.title = webapp.name;
+                    btn.innerHTML = `<img src="${webapp.iconUrl}" onerror="this.src='https://www.google.com/s2/favicons?sz=128&domain=centaurrii.com'" class="w-7 h-7 aspect-square object-contain rounded-md" alt="${webapp.name}" />`;
+                    dockContainer.appendChild(btn);
+                });
+            }
+        }
+
+        function toggleLaunchpad() {
+            const lp = document.getElementById('launchpadOverlay');
+            const isHidden = lp.classList.contains('hidden');
+            if (isHidden) {
+                renderLaunchpadApps('');
+                lp.classList.remove('hidden');
+                lp.classList.add('flex');
+                setTimeout(() => document.getElementById('launchpadSearchInput')?.focus(), 50);
+            } else {
+                lp.classList.add('hidden');
+                lp.classList.remove('flex');
+            }
+        }
+
+        function renderLaunchpadApps(query = '') {
+            const grid = document.getElementById('launchpadGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            const q = query.trim().toLowerCase();
+
+            const allItems = [
+                ...systemApps.filter(a => a.id !== 'launchpad').map(a => ({
+                    name: a.name,
+                    isSystem: true,
+                    icon: a.icon,
+                    bg: a.bg,
+                    trigger: () => { toggleLaunchpad(); a.action ? a.action() : openApp(a.name); }
+                })),
+                ...customWebApps.map(w => ({
+                    name: w.name,
+                    isSystem: false,
+                    iconUrl: w.iconUrl,
+                    trigger: () => { toggleLaunchpad(); openCustomWebAppWindow(w); }
+                }))
+            ].filter(item => !q || item.name.toLowerCase().includes(q));
+
+            allItems.forEach(item => {
+                const card = document.createElement('div');
+                card.onclick = item.trigger;
+                card.className = 'flex flex-col items-center gap-2.5 cursor-pointer group shrink-0';
+                if (item.isSystem) {
+                    card.innerHTML = `
+                        <div class="tahoe-squircle w-20 h-20 aspect-square shrink-0 bg-gradient-to-br ${item.bg} text-white flex items-center justify-center text-3xl shadow-2xl">
+                            <i class="fa-solid ${item.icon}"></i>
+                        </div>
+                        <span class="text-xs font-semibold text-white tracking-wide drop-shadow">${item.name}</span>
+                    `;
+                } else {
+                    card.innerHTML = `
+                        <div class="tahoe-squircle w-20 h-20 aspect-square shrink-0 bg-white/95 dark:bg-slate-900/95 border border-white/40 flex items-center justify-center p-3.5 shadow-2xl">
+                            <img src="${item.iconUrl}" onerror="this.src='https://www.google.com/s2/favicons?sz=128&domain=centaurrii.com'" class="w-12 h-12 aspect-square object-contain rounded-xl" alt="${item.name}" />
+                        </div>
+                        <span class="text-xs font-semibold text-white tracking-wide drop-shadow">${item.name}</span>
+                    `;
+                }
+                grid.appendChild(card);
+            });
+        }
+
+        function initLiquidGlass() {
+            const size = 256, border = 32;
+            const canvas = document.createElement('canvas');
+            canvas.width = size; canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            const imgData = ctx.createImageData(size, size);
+            const data = imgData.data;
+
+            for (let y = 0; y < size; y++) {
+                for (let x = 0; x < size; x++) {
+                    let dx = 0, dy = 0;
+                    if (x < border) dx = -Math.pow(1 - (x / border), 2) * 100;
+                    else if (x > size - border) dx = Math.pow(1 - ((size - x) / border), 2) * 100;
+                    if (y < border) dy = -Math.pow(1 - (y / border), 2) * 100;
+                    else if (y > size - border) dy = Math.pow(1 - ((size - y) / border), 2) * 100;
+
+                    const i = (y * size + x) * 4;
+                    data[i] = Math.round(128 + dx);
+                    data[i+1] = Math.round(128 + dy);
+                    data[i+2] = 128;
+                    data[i+3] = 255;
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+            document.getElementById('liquidLensMapImage').setAttribute('href', canvas.toDataURL());
+        }
+
+        function toggleQuickTheme() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            document.getElementById('quickThemeToggle').checked = isDark;
+        }
+
+        function toggleQuickSettings() {
+            document.getElementById('quickSettingsPod').classList.toggle('hidden');
+        }
+
+        function handleDesktopRightClick(e) {
+            e.preventDefault();
+            const m = document.getElementById('desktopContextMenu');
+            m.style.left = Math.min(e.clientX, window.innerWidth - 220) + 'px';
+            m.style.top = Math.min(e.clientY, window.innerHeight - 200) + 'px';
+            m.classList.remove('hidden');
+        }
+
+        function hideContextMenu() {
+            document.getElementById('desktopContextMenu').classList.add('hidden');
+        }
+        window.addEventListener('click', () => hideContextMenu());
+
+        function makeWindowDraggable(winEl) {
+            const header = winEl.querySelector('.os-window-header');
+            let isDragging = false;
+            let startX, startY, initialLeft, initialTop;
+
+            header.addEventListener('mousedown', (e) => {
+                if (e.target.closest('button') || e.target.closest('input') || e.target.closest('select')) return;
+                isDragging = true;
+                topZIndex++;
+                winEl.style.zIndex = topZIndex;
+
+                startX = e.clientX;
+                startY = e.clientY;
+                initialLeft = winEl.offsetLeft;
+                initialTop = winEl.offsetTop;
+                e.preventDefault();
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                winEl.style.left = Math.max(0, initialLeft + dx) + 'px';
+                winEl.style.top = Math.max(0, initialTop + dy) + 'px';
+            });
+
+            window.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+        }
+
+        function createOSWindowFrame(title, subtitle, bodyHTML, width = 560, height = 560) {
+            topZIndex++;
+            windowOffsetsCount = (windowOffsetsCount + 1) % 6;
+            const offset = windowOffsetsCount * 24;
+            const winId = 'win-' + Math.random().toString(36).substr(2, 9);
+
+            // Keep windows square and proportional to screen dimensions without stretching
+            const maxDim = Math.min(window.innerWidth - 32, window.innerHeight - 120, Math.max(width, height));
+            const squareSize = Math.max(320, maxDim);
+
+            const layer = document.getElementById('floatingWindowsLayer');
+            const div = document.createElement('div');
+            div.id = winId;
+            div.style.zIndex = topZIndex;
+            div.style.left = Math.max(16, Math.min(Math.round((window.innerWidth - squareSize) / 2) + offset, window.innerWidth - squareSize - 16)) + 'px';
+            div.style.top = Math.max(42, Math.min(Math.round((window.innerHeight - squareSize - 60) / 2) + offset, window.innerHeight - squareSize - 76)) + 'px';
+            div.style.width = squareSize + 'px';
+            div.style.height = squareSize + 'px';
+            div.style.aspectRatio = '1 / 1';
+            div.className = "os-window absolute tahoe-liquid-glass rounded-tahoe-lg shadow-2xl flex flex-col overflow-hidden fade-in shrink-0";
+
+            div.innerHTML = `
+                <div class="os-window-header px-4 py-3 border-b border-slate-300/60 dark:border-white/10 flex items-center justify-between text-slate-900 dark:text-white shrink-0 cursor-grab active:cursor-grabbing">
+                    <div class="flex items-center gap-2">
+                        <button onclick="document.getElementById('${winId}').remove()" class="w-3.5 h-3.5 aspect-square shrink-0 rounded-full bg-rose-500 hover:opacity-80 transition-opacity" title="Close"></button>
+                        <button onclick="const w=document.getElementById('${winId}'); w.style.transform='scale(0.85)'; w.style.opacity='0'; setTimeout(()=>w.remove(),180)" class="w-3.5 h-3.5 aspect-square shrink-0 rounded-full bg-amber-400 hover:opacity-80 transition-opacity" title="Minimize"></button>
+                        <button onclick="toggleMaximizeWindow('${winId}')" class="w-3.5 h-3.5 aspect-square shrink-0 rounded-full bg-emerald-500 hover:opacity-80 transition-opacity" title="Maximize"></button>
+                        <span class="font-bold text-xs ml-3">${title}</span>
+                    </div>
+                    <span class="text-[10px] text-slate-500 dark:text-slate-300 font-mono">${subtitle}</span>
+                </div>
+                <div class="p-4 flex-1 flex flex-col overflow-hidden">
+                    ${bodyHTML}
+                </div>
+            `;
+
+            layer.appendChild(div);
+            makeWindowDraggable(div);
+            document.getElementById('topMenuAppTitle').textContent = title;
+            div.addEventListener('mousedown', () => {
+                topZIndex++;
+                div.style.zIndex = topZIndex;
+                document.getElementById('topMenuAppTitle').textContent = title;
+            });
+            return winId;
+        }
+
+        function toggleMaximizeWindow(winId) {
+            const w = document.getElementById(winId);
+            if (!w) return;
+            if (w.dataset.maximized === 'true') {
+                w.style.left = w.dataset.prevLeft;
+                w.style.top = w.dataset.prevTop;
+                w.style.width = w.dataset.prevWidth;
+                w.style.height = w.dataset.prevHeight;
+                w.style.aspectRatio = '1 / 1';
+                w.dataset.maximized = 'false';
+            } else {
+                w.dataset.prevLeft = w.style.left;
+                w.dataset.prevTop = w.style.top;
+                w.style.prevWidth = w.style.width;
+                w.style.prevHeight = w.style.height;
+                const maxSquare = Math.min(window.innerWidth - 24, window.innerHeight - 115);
+                w.style.left = Math.round((window.innerWidth - maxSquare) / 2) + 'px';
+                w.style.top = '40px';
+                w.style.width = maxSquare + 'px';
+                w.style.height = maxSquare + 'px';
+                w.style.aspectRatio = '1 / 1';
+                w.dataset.maximized = 'true';
+            }
+        }
+
+        function openCustomWebAppWindow(webapp) {
+            const frameId = 'webapp-frame-' + Math.random().toString(36).substr(2, 7);
+            const urlInputId = frameId + '-url';
+            const bodyHTML = `
+                <div class="flex flex-col h-full w-full">
+                    <div class="flex items-center gap-2 mb-2.5 bg-white/50 dark:bg-slate-900/40 p-2 rounded-2xl border border-white/60 dark:border-white/10 shrink-0">
+                        <img src="${webapp.iconUrl}" onerror="this.src='https://www.google.com/s2/favicons?sz=128&domain=centaurrii.com'" class="w-5 h-5 rounded object-contain ml-1" />
+                        <input id="${urlInputId}" type="text" value="${webapp.domain}" onkeydown="if(event.key==='Enter') navigateWebAppFrame('${frameId}', this.value)" class="flex-1 px-3 py-1.5 rounded-xl bg-white/85 dark:bg-slate-900/80 border border-slate-300 dark:border-white/15 text-xs outline-none font-mono" />
+                        <button onclick="navigateWebAppFrame('${frameId}', document.getElementById('${urlInputId}').value)" class="px-3.5 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs shadow">Go</button>
+                        <button onclick="popoutCloakedBlank(document.getElementById('${urlInputId}').value, '${webapp.name.replace(/'/g, '')}')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs shadow" title="Open in Cloaked about:blank Tab">
+                            <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i>Pop Out
+                        </button>
+                    </div>
+                    <div class="flex-1 rounded-2xl overflow-hidden bg-white border border-slate-200 dark:border-white/10 relative shadow-inner">
+                        <iframe id="${frameId}" src="${webapp.domain}" class="w-full h-full border-0" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+                    </div>
+                </div>
+            `;
+            createOSWindowFrame(webapp.name, webapp.domain, bodyHTML, 880, 560);
+        }
+
+        function navigateWebAppFrame(frameId, rawUrl) {
+            const iframe = document.getElementById(frameId);
+            if (!iframe) return;
+            iframe.src = normalizeDomainUrl(rawUrl);
+        }
+
+        function popoutCloakedBlank(targetUrl, title = 'Centauri Web App') {
+            const win = window.open('about:blank', '_blank');
+            if (!win) return;
+            win.document.write(`<!DOCTYPE html><html><head><title>${title}</title><style>body,html{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000;}iframe{width:100%;height:100%;border:none;}</style></head><body><iframe src="${normalizeDomainUrl(targetUrl)}" referrerpolicy="no-referrer"></iframe></body></html>`);
+            win.document.close();
+        }
+
+        // Fine-Tuned Centauri AI Assistant with Exponential Backoff & Local OS Fallbacks
+        async function sendCentauriAIMessage(chatBoxId, inputId) {
+            const inputEl = document.getElementById(inputId);
+            const chatBox = document.getElementById(chatBoxId);
+            if (!inputEl || !chatBox) return;
+
+            const userText = inputEl.value.trim();
+            if (!userText) return;
+            inputEl.value = '';
+
+            const userBubble = document.createElement('div');
+            userBubble.className = 'self-end max-w-[80%] px-4 py-2.5 rounded-2xl bg-sky-500 text-white text-xs font-medium shadow';
+            userBubble.textContent = userText;
+            chatBox.appendChild(userBubble);
+
+            const loadingBubble = document.createElement('div');
+            loadingBubble.className = 'self-start max-w-[85%] px-4 py-2.5 rounded-2xl bg-white/80 dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 text-xs border border-slate-200 dark:border-white/10 shadow';
+            loadingBubble.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-1.5 text-sky-500"></i>Centauri AI is thinking...';
+            chatBox.appendChild(loadingBubble);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            aiConversationHistory.push({ role: 'user', parts: [{ text: userText }] });
+
+            const systemPrompt = "You are Centauri AI, the flagship built-in assistant inside Centauri OS (macOS Tahoe Liquid Glass Edition). Be concise, helpful, technical, and friendly. You can help users add web apps by domain, use the proxy client, write code, or answer study questions.";
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: aiConversationHistory,
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+
+            let replyText = null;
+            const delays = [1000, 2000, 4000];
+            for (let attempt = 0; attempt <= delays.length; attempt++) {
+                try {
+                    const res = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (replyText) break;
+                    }
+                } catch (err) {}
+                if (attempt < delays.length) {
+                    await new Promise(r => setTimeout(r, delays[attempt]));
+                }
+            }
+
+            if (!replyText) {
+                replyText = "Centauri AI Local Kernel Response: I'm ready! Tip: You can install any site as an app using '+ Add Web App' in the top bar (just type a domain like wikipedia.org and it automatically pulls the favicon), or launch sites in an isolated tab from the Proxy Client.";
+            }
+
+            aiConversationHistory.push({ role: 'model', parts: [{ text: replyText }] });
+            loadingBubble.textContent = replyText;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function openApp(appName) {
+            if (appName === 'Centauri AI') {
+                const chatId = 'ai-chat-' + Math.random().toString(36).substr(2, 6);
+                const inputId = chatId + '-input';
+                const body = `
+                    <div class="flex flex-col h-full w-full">
+                        <div id="${chatId}" class="flex-1 overflow-y-auto custom-scrollbar p-3 flex flex-col gap-3 bg-white/40 dark:bg-slate-900/40 rounded-2xl border border-white/50 dark:border-white/10">
+                            <div class="self-start max-w-[85%] px-4 py-2.5 rounded-2xl bg-white/85 dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 text-xs border border-slate-200 dark:border-white/10 shadow">
+                                Hello! I am <b>Centauri AI</b> (fine-tuned for Centauri OS Tahoe). Ask me anything, generate code, or ask how to configure Web Apps and Proxy endpoints!
+                            </div>
+                        </div>
+                        <div class="mt-3 flex items-center gap-2 shrink-0">
+                            <input id="${inputId}" type="text" onkeydown="if(event.key==='Enter') sendCentauriAIMessage('${chatId}', '${inputId}')" placeholder="Ask Centauri AI anything..." class="flex-1 px-4 py-2.5 rounded-2xl bg-white/85 dark:bg-slate-900/85 border border-slate-300 dark:border-white/15 text-xs outline-none" />
+                            <button onclick="sendCentauriAIMessage('${chatId}', '${inputId}')" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-xs shadow-lg hover:opacity-95">Send</button>
+                        </div>
+                    </div>
+                `;
+                createOSWindowFrame('Centauri AI', 'Gemini 3 Flash • Fine-Tuned', body, 720, 500);
+                return;
+            }
+
+            if (appName === 'Proxy Client') {
+                const pId = 'proxy-' + Math.random().toString(36).substr(2, 6);
+                const body = `
+                    <div class="flex flex-col h-full w-full">
+                        <div class="flex flex-wrap items-center gap-2 mb-3 bg-white/50 dark:bg-slate-900/40 p-2.5 rounded-2xl border border-white/60 dark:border-white/10 shrink-0">
+                            <select id="${pId}-mode" class="px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-slate-300 dark:border-white/20 text-xs outline-none font-semibold">
+                                <option value="direct">Direct Frame</option>
+                                <option value="reader">Wikipedia / Reader Proxy</option>
+                                <option value="cloaked">Cloaked about:blank Launcher</option>
+                            </select>
+                            <input type="text" id="${pId}-url" value="https://en.wikipedia.org/wiki/Main_Page" onkeydown="if(event.key==='Enter') runProxyNavigation('${pId}')" placeholder="Enter domain or URL (e.g. wikipedia.org)" class="flex-1 px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-slate-300 dark:border-white/20 text-xs outline-none font-mono" />
+                            <button onclick="runProxyNavigation('${pId}')" class="px-4 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs shadow">Connect</button>
+                            <button onclick="popoutCloakedBlank(document.getElementById('${pId}-url').value, 'Centauri Proxy')" class="px-3 py-1.5 rounded-xl bg-slate-800 text-white font-semibold text-xs shadow" title="Pop Out Cloaked">Pop Out</button>
+                        </div>
+                        <div class="flex-1 rounded-2xl overflow-hidden bg-white border border-slate-200 dark:border-white/10 relative shadow-inner">
+                            <iframe id="${pId}-frame" src="https://en.wikipedia.org/wiki/Main_Page" class="w-full h-full border-0" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+                        </div>
+                    </div>
+                `;
+                createOSWindowFrame('Proxy Client', 'Multi-Transport Gateway', body, 860, 550);
+                return;
+            }
+
+            if (appName === 'Game Hub') {
+                const gId = 'game-frame-' + Math.random().toString(36).substr(2, 6);
+                const body = `
+                    <div class="flex flex-col h-full w-full gap-3">
+                        <div class="flex items-center justify-between bg-white/50 dark:bg-slate-900/40 px-4 py-2.5 rounded-2xl border border-white/60 dark:border-white/10 shrink-0">
+                            <div class="flex items-center gap-2 text-xs font-bold">
+                                <button onclick="document.getElementById('${gId}').src='https://play2048.co/'" class="px-3 py-1.5 rounded-xl bg-indigo-500 text-white shadow">2048</button>
+                                <button onclick="document.getElementById('${gId}').src='https://hexgl.bkcore.com/play/'" class="px-3 py-1.5 rounded-xl bg-purple-600 text-white shadow">HexGL Racing</button>
+                                <button onclick="document.getElementById('${gId}').src='https://www.google.com/logos/2010/pacman10-i.html'" class="px-3 py-1.5 rounded-xl bg-amber-500 text-white shadow">Pac-Man</button>
+                            </div>
+                            <button onclick="openAddWebAppModal()" class="px-3 py-1.5 rounded-xl bg-sky-500 text-white text-xs font-bold">+ Add Game Domain</button>
+                        </div>
+                        <div class="flex-1 rounded-2xl overflow-hidden bg-slate-950 border border-white/15 shadow-inner">
+                            <iframe id="${gId}" src="https://play2048.co/" class="w-full h-full border-0" referrerpolicy="no-referrer"></iframe>
+                        </div>
+                    </div>
+                `;
+                createOSWindowFrame('Game Hub', 'HTML5 Arcade Engine', body, 880, 560);
+                return;
+            }
+
+            if (appName === 'Terminal') {
+                const tId = 'term-' + Math.random().toString(36).substr(2, 6);
+                const body = `
+                    <div class="flex flex-col h-full w-full bg-slate-950/95 text-emerald-400 font-mono text-xs p-4 rounded-2xl border border-white/15 overflow-y-auto custom-scrollbar" id="${tId}-out">
+                        <pre class="text-sky-400 leading-tight mb-2">
+        ~+
+                 *       +
+           '                  |
+       ()    .-.,="\`\`"=.    - o -
+             '=/_       \\     |
+          *   |  '=._    |
+               \\     \`=./\`,        '
+            .   '=.__.=' \`='      *
+   +                         +
+        O      *        '       .
+                        </pre>
+                        <div>Centauri OS v4.0 Tahoe Kernel — Type <span class="text-white font-bold">help</span>, <span class="text-white font-bold">neofetch</span>, <span class="text-white font-bold">apps</span>, or <span class="text-white font-bold">clear</span>.</div>
+                        <div class="mt-2 flex items-center gap-2">
+                            <span class="text-sky-400 font-bold">centauri@tahoe:~$</span>
+                            <input type="text" onkeydown="if(event.key==='Enter') handleTerminalCommand(this, '${tId}-out')" class="flex-1 bg-transparent text-emerald-300 outline-none" autofocus />
+                        </div>
+                    </div>
+                `;
+                createOSWindowFrame('Terminal', 'zsh • centauri-kernel', body, 720, 460);
+                return;
+            }
+
+            if (appName === 'Notes') {
+                const body = `
+                    <textarea oninput="savedNotesContent = this.value" class="w-full h-full p-4 rounded-2xl bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 text-xs leading-relaxed outline-none resize-none font-medium">${savedNotesContent}</textarea>
+                `;
+                createOSWindowFrame('Notes', 'Synced in Session Memory', body, 640, 440);
+                return;
+            }
+
+            if (appName === 'Music Studio') {
+                const body = `
+                    <div class="flex flex-col items-center justify-center h-full space-y-5 text-center">
+                        <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-rose-500 to-red-600 text-white flex items-center justify-center text-3xl shadow-2xl">
+                            <i class="fa-solid fa-wave-square"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-base">Centauri Ambient Synth Pad</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-300">Click any chord pad below to play WebAudio ambient glass tones</p>
+                        </div>
+                        <div class="flex flex-wrap justify-center gap-3">
+                            <button onclick="playSynthChord([261.63, 329.63, 392.00, 493.88])" class="px-5 py-3 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs shadow-lg">Cmaj7 Glass</button>
+                            <button onclick="playSynthChord([220.00, 261.63, 329.63, 392.00])" class="px-5 py-3 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-lg">Am7 Nebula</button>
+                            <button onclick="playSynthChord([174.61, 220.00, 261.63, 349.23])" class="px-5 py-3 rounded-2xl bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs shadow-lg">Fmaj7 Tahoe</button>
+                            <button onclick="playSynthChord([196.00, 246.94, 293.66, 392.00])" class="px-5 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs shadow-lg">G6 Horizon</button>
+                        </div>
+                    </div>
+                `;
+                createOSWindowFrame('Music Studio', 'WebAudio Ambient Engine', body, 620, 420);
+                return;
+            }
+
+            if (appName === 'Settings') {
+                const body = `
+                    <div class="space-y-5 text-xs overflow-y-auto custom-scrollbar pr-2">
+                        <div class="p-4 rounded-2xl bg-white/60 dark:bg-slate-900/50 border border-slate-200/70 dark:border-white/10 space-y-3">
+                            <h4 class="font-bold text-sm flex items-center gap-2"><i class="fa-solid fa-circle-nodes text-sky-500"></i>Custom White Centauri Logo (Startup & Dock)</h4>
+                            <p class="text-slate-500 dark:text-slate-300">Upload your white Centauri logo image file or paste an image URL to update the Boot Screen, Top Bar, and Dock Launchpad icon.</p>
+                            <div class="flex items-center gap-3">
+                                <input type="file" accept="image/*" onchange="handleLogoFileUpload(this)" class="text-xs file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:bg-sky-500 file:text-white file:font-bold cursor-pointer" />
+                                <button onclick="updateCustomBrandLogo(DEFAULT_WHITE_CENTAURI_LOGO)" class="px-3 py-1.5 rounded-xl bg-slate-200 dark:bg-white/10 font-semibold">Reset Default</button>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <input id="settingsCustomLogoUrl" type="text" placeholder="Or paste direct image URL / data URI..." class="flex-1 px-3 py-1.5 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-slate-300 dark:border-white/15 outline-none" />
+                                <button onclick="updateCustomBrandLogo(document.getElementById('settingsCustomLogoUrl').value)" class="px-4 py-1.5 rounded-xl bg-sky-500 text-white font-bold">Apply URL</button>
+                            </div>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-white/60 dark:bg-slate-900/50 border border-slate-200/70 dark:border-white/10 flex items-center justify-between">
+                            <div>
+                                <h4 class="font-bold text-sm">Add Website as Centauri App</h4>
+                                <p class="text-slate-500 dark:text-slate-300">Install any domain with automatic Google S2 Favicon detection</p>
+                            </div>
+                            <button onclick="openAddWebAppModal()" class="px-4 py-2 rounded-xl bg-emerald-500 text-white font-bold shadow">+ Add Web App</button>
+                        </div>
+                    </div>
+                `;
+                createOSWindowFrame('Settings', 'System & Branding Configuration', body, 660, 440);
+            }
+        }
+
+        function runProxyNavigation(pId) {
+            const mode = document.getElementById(pId + '-mode').value;
+            const rawUrl = document.getElementById(pId + '-url').value.trim();
+            const targetUrl = normalizeDomainUrl(rawUrl || 'https://en.wikipedia.org');
+            const iframe = document.getElementById(pId + '-frame');
+            if (!iframe) return;
+
+            if (mode === 'cloaked') {
+                popoutCloakedBlank(targetUrl, 'Centauri Proxy');
+            } else if (mode === 'reader') {
+                const searchTerm = rawUrl.replace(/^https?:\/\//i, '').split('/')[0];
+                iframe.src = 'https://en.wikipedia.org/wiki/Special:Search?search=' + encodeURIComponent(searchTerm);
+            } else {
+                iframe.src = targetUrl;
+            }
+        }
+
+        function handleTerminalCommand(inputEl, outId) {
+            const cmd = inputEl.value.trim();
+            const out = document.getElementById(outId);
+            if (!out) return;
+
+            const log = document.createElement('div');
+            log.className = 'mt-1 text-slate-300';
+            if (cmd === 'clear') {
+                out.innerHTML = '';
+            } else if (cmd === 'help') {
+                log.innerHTML = `Available commands: <span class="text-emerald-400">neofetch</span>, <span class="text-emerald-400">apps</span>, <span class="text-emerald-400">addapp &lt;domain&gt;</span>, <span class="text-emerald-400">clear</span>`;
+                out.insertBefore(log, inputEl.parentElement);
+            } else if (cmd === 'apps') {
+                log.textContent = 'Installed Web Apps: ' + customWebApps.map(a => `${a.name} (${a.domain})`).join(', ');
+                out.insertBefore(log, inputEl.parentElement);
+            } else if (cmd.startsWith('addapp ')) {
+                const dom = cmd.replace('addapp ', '').trim();
+                const url = normalizeDomainUrl(dom);
+                customWebApps.push({
+                    id: 'webapp-' + Date.now(),
+                    name: dom.split('.')[0].toUpperCase(),
+                    domain: url,
+                    iconUrl: getFaviconFromDomain(url, ''),
+                    pinned: true,
+                    desktop: true
+                });
+                renderDesktopAndDock();
+                log.textContent = `Installed Web App for ${url} with default favicon!`;
+                out.insertBefore(log, inputEl.parentElement);
+            } else {
+                log.textContent = `System: Executed '${cmd}' — CPU Cores: ${navigator.hardwareConcurrency || 8} | Platform: ${navigator.platform}`;
+                out.insertBefore(log, inputEl.parentElement);
+            }
+            inputEl.value = '';
+            out.scrollTop = out.scrollHeight;
+        }
+
+        function playSynthChord(freqs) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            const ctx = new AudioCtx();
+            freqs.forEach(f => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = f;
+                gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 2.4);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 2.4);
+            });
+        }
+
+        function dismissLoginScreen() {
+            const bootScreen = document.getElementById('macBootScreen');
+            bootScreen.style.opacity = '0';
+            setTimeout(() => bootScreen.remove(), 250);
+        }
+
+        window.onload = function() {
+            applyBrandLogos();
+            initLiquidGlass();
+            renderDesktopAndDock();
+
+            // Exact Boot Sequence: White Centauri Logo for 5s, blank black for 1s, then 0.25s fade-in to Login button
+            setTimeout(() => {
+                document.getElementById('bootLogoContainer').style.display = 'none';
+                setTimeout(() => {
+                    const loginContainer = document.getElementById('loginScreenContainer');
+                    loginContainer.classList.remove('hidden');
+                    loginContainer.classList.add('flex');
+                    requestAnimationFrame(() => {
+                        loginContainer.classList.remove('opacity-0');
+                        loginContainer.classList.add('opacity-100');
+                    });
+                }, 1000);
+            }, 5000);
+
+            if (navigator.getBattery) {
+                navigator.getBattery().then(battery => {
+                    function updateBatteryUI() {
+                        const pct = Math.round(battery.level * 100);
+                        const isCharging = battery.charging;
+                        let iconClass = 'fa-battery-full';
+                        if (pct <= 20) iconClass = 'fa-battery-empty text-rose-500';
+                        else if (pct <= 50) iconClass = 'fa-battery-half';
+                        else if (pct <= 80) iconClass = 'fa-battery-three-quarters';
+
+                        const textStr = `<i class="fa-solid ${iconClass} mr-1"></i>${pct}%${isCharging ? ' <i class="fa-solid fa-bolt text-amber-400 text-[10px]"></i>' : ''}`;
+                        document.getElementById('topBatteryDisplay').innerHTML = textStr;
+                        document.getElementById('quickBatteryStatus').textContent = `${pct}% (${isCharging ? 'Charging' : 'Discharging'})`;
+                    }
+                    updateBatteryUI();
+                    battery.addEventListener('levelchange', updateBatteryUI);
+                    battery.addEventListener('chargingchange', updateBatteryUI);
+                });
+            }
+
+            const updateClock = () => {
+                const now = new Date();
+                const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+                const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                let h = now.getHours(), m = String(now.getMinutes()).padStart(2,'0');
+                document.getElementById('topClockDisplay').textContent = `${days[now.getDay()]} ${months[now.getMonth()]} ${now.getDate()} ${h%12||12}:${m} ${h>=12?'PM':'AM'}`;
+            };
+            updateClock();
+            setInterval(updateClock, 1000);
+        };
+    </script>
+</body>
+</html>
