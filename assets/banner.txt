@@ -1,1 +1,1 @@
-Heads up! I have disabled the icon fetcher API due to content not appropriate for all ages and for the sake of accuracy.
+We are testing out a new look! Go to centaurrii.com/beta to see what we changed
