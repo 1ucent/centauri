@@ -3,42 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
     <title>centauri</title>
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <!-- Favicon with Two-Tier Fallback -->
+    <link id="faviconLink" rel="icon" type="image/png" href="assets/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Font: Darker Grotesque -->
-    <link href="https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Fallback Inter Font for non-Apple systems -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --accent-bg: #111827; /* Default accent */
+            --accent-bg: #111827;
+            --glass-bg: rgba(255, 255, 255, 0.42);
+            --glass-bg-strong: rgba(255, 255, 255, 0.62);
+            --glass-border: rgba(255, 255, 255, 0.55);
+            --glass-highlight: rgba(255, 255, 255, 0.85);
+            --glass-shadow: rgba(0, 0, 0, 0.14);
+            --mouse-x: 50%;
+            --mouse-y: 50%;
         }
         
         .dark {
-            --accent-bg: #f9fafb; /* Lighter accent for dark mode defaults */
+            --accent-bg: #f9fafb;
+            --glass-bg: rgba(20, 20, 24, 0.48);
+            --glass-bg-strong: rgba(18, 18, 22, 0.72);
+            --glass-border: rgba(255, 255, 255, 0.16);
+            --glass-highlight: rgba(255, 255, 255, 0.34);
+            --glass-shadow: rgba(0, 0, 0, 0.48);
         }
 
+        /* Native macOS Sequoia / Tahoe Font Stack */
         body { 
-            font-family: 'Darker Grotesque', sans-serif; 
-            -webkit-tap-highlight-color: transparent; /* Remove blue tap highlight on mobile */
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            letter-spacing: -0.015em;
+        }
+
+        /* Authentic Apple Liquid Glass Surface with Perimeter Refraction */
+        .liquid-glass {
+            background: var(--glass-bg);
+            backdrop-filter: url(#liquidGlassLens) blur(24px) saturate(190%) brightness(1.04);
+            -webkit-backdrop-filter: url(#liquidGlassLens) blur(24px) saturate(190%) brightness(1.04);
+            border: 1px solid var(--glass-border);
+            box-shadow:
+                0 12px 32px -4px var(--glass-shadow),
+                inset 0 1.5px 1px 0 var(--glass-highlight),
+                inset 0 -1px 1.5px 0 rgba(255, 255, 255, 0.18),
+                inset 1px 0 1px 0 rgba(0, 225, 255, 0.09),
+                inset -1px 0 1px 0 rgba(255, 60, 172, 0.09);
+            position: relative;
+        }
+
+        .liquid-glass-strong {
+            background: var(--glass-bg-strong);
+            backdrop-filter: url(#liquidGlassLens) blur(34px) saturate(210%);
+            -webkit-backdrop-filter: url(#liquidGlassLens) blur(34px) saturate(210%);
+            border: 1px solid var(--glass-border);
+            box-shadow:
+                0 24px 60px -12px var(--glass-shadow),
+                inset 0 1.5px 1.5px 0 var(--glass-highlight),
+                inset 0 -1px 2px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        /* Specular Cursor-Tracked Glare Overlay */
+        .liquid-interactive {
+            position: relative;
+            overflow: hidden;
+        }
+        .liquid-interactive::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(
+                280px circle at var(--mouse-x) var(--mouse-y),
+                rgba(255, 255, 255, 0.24),
+                transparent 65%
+            );
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .dark .liquid-interactive::before {
+            background: radial-gradient(
+                280px circle at var(--mouse-x) var(--mouse-y),
+                rgba(255, 255, 255, 0.12),
+                transparent 65%
+            );
+        }
+        .liquid-interactive:hover::before {
+            opacity: 1;
+        }
+
+        /* Liquid Glass Card Physics */
+        .game-card {
+            transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease;
+        }
+        .game-card:hover {
+            transform: translateY(-4px) scale(1.015);
+            box-shadow:
+                0 20px 40px -10px var(--glass-shadow),
+                inset 0 1.5px 2px 0 var(--glass-highlight);
         }
         
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(148, 163, 184, 0.45); border-radius: 9999px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: rgba(148, 163, 184, 0.75); }
         
         .main-scrollbar::-webkit-scrollbar { width: 8px; }
         .main-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .main-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; }
-        .dark .main-scrollbar::-webkit-scrollbar-thumb { background-color: #475569; }
+        .main-scrollbar::-webkit-scrollbar-thumb { background-color: rgba(148, 163, 184, 0.45); border-radius: 9999px; }
         
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        .fade-in { animation: fadeIn 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
         @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(5px); } 
+            from { opacity: 0; transform: translateY(6px); } 
             to { opacity: 1; transform: translateY(0); } 
         }
 
@@ -91,325 +172,705 @@
     </script>
 </head>
 
-<body class="bg-gray-50 dark:bg-darkbg text-gray-900 dark:text-gray-100 h-[100dvh] flex flex-col overflow-hidden selection:bg-gray-200 dark:selection:bg-gray-800 lowercase transition-colors duration-300">
+<body class="bg-gray-900 text-gray-900 dark:text-gray-100 h-screen flex flex-col overflow-hidden selection:bg-gray-200 dark:selection:bg-gray-800 lowercase transition-colors duration-300 relative">
+
+    <!-- Hidden SVG Optical Meniscus Displacement Filter for Real Liquid Glass Edge Warping -->
+    <svg class="fixed w-0 h-0 pointer-events-none" aria-hidden="true">
+        <defs>
+            <filter id="liquidGlassLens" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+                <feImage id="liquidNormalMap" result="normalMap" preserveAspectRatio="none" />
+                <feDisplacementMap in="SourceGraphic" in2="normalMap" scale="18" xChannelSelector="R" yChannelSelector="G" result="refracted" />
+            </filter>
+        </defs>
+    </svg>
+
+    <!-- Default Wallpaper Layer (assets/wallpaper.png with Two-Tier Fallback) -->
+    <div id="wallpaperContainer" class="fixed inset-0 z-0 pointer-events-none overflow-hidden bg-gray-950">
+        <img id="wallpaperImage" src="assets/wallpaper.png" alt="" 
+             onerror="handleAssetFallback(this, 'assets/wallpaper.png', true)"
+             class="w-full h-full object-cover scale-[1.02] transition-opacity duration-700">
+        <div class="absolute inset-0 bg-white/15 dark:bg-black/35 transition-colors duration-500"></div>
+    </div>
+
+    <!-- Desktop-Only Guardrail (Mobile Support Scrapped per Gamma Spec) -->
+    <div id="desktopGuardrail" class="fixed inset-0 z-[250] hidden items-center justify-center p-6 bg-black/85 backdrop-blur-2xl text-white text-center">
+        <div class="liquid-glass-strong max-w-md w-full p-8 rounded-3xl border border-white/20 flex flex-col items-center">
+            <div class="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center mb-5">
+                <i class="fa-solid fa-laptop text-2xl text-white"></i>
+            </div>
+            <h2 class="text-2xl font-bold tracking-tight mb-2">desktop required</h2>
+            <p class="text-sm text-white/70 leading-relaxed mb-6">
+                centauri gamma and its game catalog are engineered exclusively for desktop, laptop, and chromebook hardware. mobile devices are not supported.
+            </p>
+            <div class="text-[11px] font-mono uppercase tracking-widest text-white/40">
+                centauri gamma :: desktop-only runtime
+            </div>
+        </div>
+    </div>
+
+    <!-- Critical Asset Failure Circuit Breaker (Kernel Halt Screen) -->
+    <div id="kernelHaltScreen" class="fixed inset-0 z-[300] hidden items-center justify-center p-6 bg-neutral-950 text-white select-none">
+        <div class="max-w-lg w-full p-10 rounded-3xl border border-white/15 bg-white/[0.04] backdrop-blur-2xl text-center shadow-2xl">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-red-500/15 border border-red-500/30 text-red-400 text-xs font-bold tracking-widest uppercase mb-6">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>halt</span>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-white mb-3">
+                centauri gamma failed to initialize
+            </h1>
+            <p class="text-sm text-neutral-400 leading-relaxed mb-2">
+                critical ui assets could not be resolved from local storage or remote mirror endpoints.
+            </p>
+            <p id="kernelHaltAssetDetail" class="text-xs font-mono text-red-400/80 mb-8"></p>
+            <div class="flex items-center justify-center gap-3">
+                <button onclick="location.reload()" class="px-5 py-2.5 rounded-xl bg-white text-black text-xs font-bold tracking-wider uppercase hover:bg-neutral-200 transition-colors">
+                    reload
+                </button>
+                <a href="https://centaurrii.com" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white text-xs font-bold tracking-wider uppercase transition-colors">
+                    check mirror
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delta Update Notification Pill (assets/update.txt) -->
+    <div id="updateToastPill" onclick="openUpdateDrawer()" class="fixed top-16 right-6 z-[110] hidden items-center gap-3.5 px-4 py-3 rounded-2xl liquid-glass liquid-interactive cursor-pointer shadow-2xl hover:scale-[1.02] transition-all fade-in">
+        <div class="w-8 h-8 rounded-xl bg-[var(--accent-bg)] text-white dark:text-black flex items-center justify-center shrink-0 shadow-sm">
+            <i class="fa-solid fa-sparkles text-xs"></i>
+        </div>
+        <div class="pr-2">
+            <div class="text-xs font-bold text-gray-900 dark:text-white leading-tight">centauri updated</div>
+            <div class="text-[11px] text-gray-600 dark:text-gray-300">click to view what's new in gamma</div>
+        </div>
+        <button onclick="event.stopPropagation(); dismissUpdateToast();" class="text-gray-400 hover:text-gray-900 dark:hover:text-white p-1 transition-colors" title="dismiss">
+            <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+    </div>
+
+    <!-- Delta Update Release Notes Drawer / Modal -->
+    <div id="updateModal" class="fixed inset-0 bg-black/40 backdrop-blur-md z-[120] hidden items-center justify-center p-6 fade-in">
+        <div class="liquid-glass-strong w-full max-w-xl rounded-3xl p-8 relative flex flex-col max-h-[80vh] shadow-2xl">
+            <div class="flex items-center justify-between pb-4 mb-4 border-b border-black/10 dark:border-white/10">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-[var(--accent-bg)] text-white dark:text-black flex items-center justify-center">
+                        <i class="fa-solid fa-bell text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white tracking-tight">what's new</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">latest release notes from update.txt</p>
+                    </div>
+                </div>
+                <button onclick="closeUpdateDrawer()" class="w-8 h-8 rounded-full liquid-glass flex items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+            <div id="updateNotesContent" class="flex-1 overflow-y-auto custom-scrollbar text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed font-medium pr-2">
+                loading update notes...
+            </div>
+            <div class="mt-6 pt-4 border-t border-black/10 dark:border-white/10 flex justify-end">
+                <button onclick="closeUpdateDrawer()" class="px-5 py-2 rounded-xl bg-[var(--accent-bg)] text-white dark:text-black text-xs font-bold tracking-wider uppercase shadow-sm hover:opacity-90 transition-opacity">
+                    got it
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Top Announcement Banner -->
-    <div id="topBanner" class="hidden bg-[var(--accent-bg)] text-white px-4 py-2.5 flex justify-between items-center z-[100] shadow-md transition-colors">
-        <div id="topBannerText" class="flex-1 text-center text-sm font-bold tracking-wide uppercase"></div>
+    <div id="topBanner" class="hidden liquid-glass text-white px-4 py-2.5 flex justify-between items-center z-[100] shadow-md transition-colors shrink-0">
+        <div id="topBannerText" class="flex-1 text-center text-sm font-semibold tracking-wide uppercase"></div>
         <button onclick="document.getElementById('topBanner').classList.add('hidden')" class="ml-4 hover:opacity-75 transition-opacity"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
-    <!-- External Audio -->
-    <audio id="hoverSoundElement" src="assets/hover.mp3" preload="auto"></audio>
-    <audio id="pressSoundElement" src="assets/press.mp3" preload="auto"></audio>
-    <audio id="returnSoundElement" src="assets/return.mp3" preload="auto"></audio>
+    <!-- External Audio with Two-Tier Fallback -->
+    <audio id="hoverSoundElement" src="assets/hover.mp3" preload="auto" onerror="handleAssetFallback(this, 'assets/hover.mp3', false)"></audio>
+    <audio id="pressSoundElement" src="assets/press.mp3" preload="auto" onerror="handleAssetFallback(this, 'assets/press.mp3', false)"></audio>
+    <audio id="returnSoundElement" src="assets/return.mp3" preload="auto" onerror="handleAssetFallback(this, 'assets/return.mp3', false)"></audio>
     <audio id="setupMusicElement" src="https://jetta.vgmtreasurechest.com/soundtracks/nintendo-3ds-background-music/bcpbqieiir/01.%20Initial%20Setup.mp3" loop preload="auto"></audio>
     <audio id="loadingMusicElement" src="https://jetta.vgmtreasurechest.com/soundtracks/nintendo-3ds-background-music/aixncyaemk/46.%20System%20Transfer%20-%20Receive.mp3" loop preload="auto"></audio>
-    <audio id="globalMusicElement" preload="auto"></audio>
+    <audio id="globalMusicElement" preload="auto" onerror="handleGlobalMusicError(this)"></audio>
 
     <div id="eggScreen" class="fixed inset-0 bg-black z-[85] hidden flex-col items-center justify-center transition-opacity duration-800 cursor-pointer">
-        <video id="eggVideoElement" src="assets/egg.mp4" class="absolute inset-0 w-full h-full object-contain hidden bg-black" playsinline></video>
+        <video id="eggVideoElement" src="assets/egg.mp4" onerror="handleAssetFallback(this, 'assets/egg.mp4', false)" class="absolute inset-0 w-full h-full object-contain hidden bg-black" playsinline></video>
         <div id="eggPrompt" class="text-white font-bold tracking-widest uppercase text-sm z-10 transition-opacity duration-500">
         </div>
     </div>
 
-    <div id="countdownScreen" class="fixed inset-0 bg-gray-50 dark:bg-darkbg z-[90] flex flex-col items-center justify-center transition-opacity duration-1000 hidden">
+    <div id="countdownScreen" class="fixed inset-0 liquid-glass-strong z-[90] flex flex-col items-center justify-center transition-opacity duration-1000 hidden">
         <div class="flex flex-col items-center text-center px-4">
             <h1 id="countdownTimer" class="text-5xl md:text-7xl font-black text-gray-900 dark:text-white tracking-widest font-mono mb-3">--:--:--</h1>
-            <p id="countdownLabel" class="text-gray-500 dark:text-gray-400 text-sm font-bold tracking-[0.3em] uppercase">
-                centauri beta 1 is releasing shortly! read the disclaimer <a href="assets/disclaimer.txt" target="_blank" class="underline hover:text-black dark:hover:text-white transition-colors cursor-pointer">here</a>
+            <p id="countdownLabel" class="text-gray-600 dark:text-gray-300 text-sm font-bold tracking-[0.25em] uppercase">
+                centauri gamma is releasing shortly! read the disclaimer <a href="assets/disclaimer.txt" target="_blank" class="underline hover:text-black dark:hover:text-white transition-colors cursor-pointer">here</a>
             </p>
         </div>
     </div>
 
     <!-- Setup Wizard -->
-    <div id="setupWizard" class="fixed inset-0 bg-gray-50/95 dark:bg-darkbg/95 backdrop-blur-md z-[85] hidden flex-col items-center justify-center transition-opacity duration-500 fade-in">
-        <div class="w-full max-w-xl bg-white dark:bg-cardbg p-6 sm:p-8 md:p-12 shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col max-h-[100dvh] overflow-y-auto">
-            <h2 class="text-3xl font-black text-gray-900 dark:text-white mb-2 tracking-tight">setup centauri.</h2>
-            <p class="text-gray-500 dark:text-gray-400 mb-8 font-medium">configure your personal experience.</p>
+    <div id="setupWizard" class="fixed inset-0 bg-black/30 backdrop-blur-xl z-[85] hidden flex-col items-center justify-center transition-opacity duration-500 fade-in p-6">
+        <div class="w-full max-w-xl liquid-glass-strong rounded-3xl p-8 md:p-12 flex flex-col max-h-screen overflow-y-auto">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-1 tracking-tight">setup centauri.</h2>
+            <p class="text-gray-600 dark:text-gray-300 mb-8 text-sm font-medium">configure your personal experience.</p>
             
-            <div class="space-y-6 flex-grow">
+            <div class="space-y-5 flex-grow">
                 <!-- Theme Toggle -->
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between p-3.5 rounded-2xl liquid-glass">
                     <div>
-                        <span class="text-gray-900 dark:text-white text-base font-bold block">appearance</span>
-                        <span class="text-gray-500 dark:text-gray-400 text-sm">switch between light and dark mode.</span>
+                        <span class="text-gray-900 dark:text-white text-sm font-semibold block">appearance</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-xs">switch between light and dark glass.</span>
                     </div>
-                    <select id="setupTheme" onchange="previewTheme(this.value)" class="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm block p-2.5 focus:ring-gray-300 focus:border-gray-300 outline-none font-bold">
-                        <option value="dark">dark</option>
-                        <option value="light">light</option>
+                    <select id="setupTheme" onchange="previewTheme(this.value)" class="liquid-glass rounded-xl text-gray-900 dark:text-white text-xs block px-3 py-2 outline-none font-semibold">
+                        <option value="dark" class="bg-gray-900 text-white">dark</option>
+                        <option value="light" class="bg-white text-gray-900">light</option>
                     </select>
                 </div>
 
                 <!-- Custom Accent Color -->
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between p-3.5 rounded-2xl liquid-glass">
                     <div>
-                        <span class="text-gray-900 dark:text-white text-base font-bold block">accent color</span>
-                        <span class="text-gray-500 dark:text-gray-400 text-sm">pick a custom highlight color.</span>
+                        <span class="text-gray-900 dark:text-white text-sm font-semibold block">accent color</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-xs">pick a custom highlight color.</span>
                     </div>
-                    <input type="color" id="setupAccent" value="#f9fafb" class="w-10 h-10 cursor-pointer bg-transparent border-0 p-0" oninput="previewAccent(this.value)">
+                    <input type="color" id="setupAccent" value="#f9fafb" class="w-9 h-9 rounded-lg cursor-pointer bg-transparent border-0 p-0" oninput="previewAccent(this.value)">
                 </div>
 
                 <!-- Launch Mode -->
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between p-3.5 rounded-2xl liquid-glass">
                     <div>
-                        <span class="text-gray-900 dark:text-white text-base font-bold block">launch mode</span>
-                        <span class="text-gray-500 dark:text-gray-400 text-sm">how should games open?</span>
+                        <span class="text-gray-900 dark:text-white text-sm font-semibold block">launch mode</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-xs">how should games open?</span>
                     </div>
-                    <select id="setupLaunchMode" class="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm block p-2.5 outline-none font-bold">
-                        <option value="cloak">stealth (about:blank)</option>
-                        <option value="modal">in-app (modal)</option>
-                        <option value="direct">direct link</option>
+                    <select id="setupLaunchMode" class="liquid-glass rounded-xl text-gray-900 dark:text-white text-xs block px-3 py-2 outline-none font-semibold">
+                        <option value="cloak" class="bg-gray-900 text-white">isolated tab (about:blank)</option>
+                        <option value="modal" class="bg-gray-900 text-white">in-app (modal)</option>
+                        <option value="direct" class="bg-gray-900 text-white">direct link</option>
                     </select>
                 </div>
 
                 <!-- AI Formatter -->
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between p-3.5 rounded-2xl liquid-glass">
                     <div>
-                        <span class="text-gray-900 dark:text-white text-base font-bold block">auto-format</span>
-                        <span class="text-gray-500 dark:text-gray-400 text-sm">clean up messy file names automatically.</span>
+                        <span class="text-gray-900 dark:text-white text-sm font-semibold block">auto-format</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-xs">clean up messy file names automatically.</span>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="setupAI" class="sr-only peer" checked>
-                        <div class="w-11 h-6 bg-gray-300 dark:bg-gray-700 after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:bg-green-500 transition-colors"></div>
+                        <div class="w-11 h-6 bg-gray-400/40 dark:bg-gray-700 rounded-full after:rounded-full after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:bg-green-500 transition-colors"></div>
                     </label>
                 </div>
 
                 <!-- Interface Sounds -->
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between p-3.5 rounded-2xl liquid-glass">
                     <div>
-                        <span class="text-gray-900 dark:text-white text-base font-bold block">interface sounds</span>
-                        <span class="text-gray-500 dark:text-gray-400 text-sm">play audio cues when interacting.</span>
+                        <span class="text-gray-900 dark:text-white text-sm font-semibold block">interface sounds</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-xs">play audio cues when interacting.</span>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="setupSound" class="sr-only peer" checked>
-                        <div class="w-11 h-6 bg-gray-300 dark:bg-gray-700 after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:bg-green-500 transition-colors"></div>
+                        <div class="w-11 h-6 bg-gray-400/40 dark:bg-gray-700 rounded-full after:rounded-full after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:bg-green-500 transition-colors"></div>
                     </label>
                 </div>
 
                 <!-- Global Music -->
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between p-3.5 rounded-2xl liquid-glass">
                     <div>
-                        <span class="text-gray-900 dark:text-white text-base font-bold block">global music</span>
-                        <span class="text-gray-500 dark:text-gray-400 text-sm">play ambient music throughout the app.</span>
+                        <span class="text-gray-900 dark:text-white text-sm font-semibold block">global music</span>
+                        <span class="text-gray-500 dark:text-gray-400 text-xs">play ambient music throughout the app.</span>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="setupMusic" class="sr-only peer" checked>
-                        <div class="w-11 h-6 bg-gray-300 dark:bg-gray-700 after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:bg-green-500 transition-colors"></div>
+                        <div class="w-11 h-6 bg-gray-400/40 dark:bg-gray-700 rounded-full after:rounded-full after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:bg-green-500 transition-colors"></div>
                     </label>
                 </div>
             </div>
 
-            <div class="mt-10 flex justify-end gap-3 border-t border-gray-100 pt-6">
-                <button onclick="finalizeSetup(true)" class="px-5 py-2.5 text-gray-500 hover:text-gray-900 text-sm font-bold transition-colors">skip</button>
-                <button onclick="finalizeSetup(false)" class="px-6 py-2.5 bg-gray-900 text-white text-sm font-bold transition-colors shadow-sm">save & continue</button>
+            <div class="mt-8 flex justify-end gap-3 border-t border-black/10 dark:border-white/10 pt-6">
+                <button onclick="finalizeSetup(true)" class="px-5 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white text-xs font-bold transition-colors">skip</button>
+                <button onclick="finalizeSetup(false)" class="px-6 py-2.5 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs font-bold transition-colors shadow-sm">save & continue</button>
             </div>
         </div>
     </div>
 
-    <div id="startupScreen" class="fixed inset-0 bg-white z-[80] flex flex-col items-center justify-center transition-opacity duration-800 cursor-pointer hidden" onclick="checkSetupStatus()">
+    <div id="startupScreen" class="fixed inset-0 liquid-glass-strong z-[80] flex flex-col items-center justify-center transition-opacity duration-800 cursor-pointer hidden" onclick="checkSetupStatus()">
         <div class="w-full max-w-2xl px-8 flex justify-center items-center flex-grow">
             <!-- The Hello SVG (Path length optimized for exactly 5s) -->
-            <svg class="hello__svg w-full h-auto max-w-md stroke-gray-900 dark:stroke-white" viewBox="0 0 1230.94 414.57">
+            <svg class="hello__svg w-full h-auto max-w-md stroke-gray-900 dark:stroke-white drop-shadow-md" viewBox="0 0 1230.94 414.57">
                 <path pathLength="1" d="M-293.58-104.62S-103.61-205.49-60-366.25c9.13-32.45,9-58.31,0-74-10.72-18.82-49.69-33.21-75.55,31.94-27.82,70.11-52.22,377.24-44.11,322.48s34-176.24,99.89-183.19c37.66-4,49.55,23.58,52.83,47.92a117.06,117.06,0,0,1-3,45.32c-7.17,27.28-20.47,97.67,33.51,96.86,66.93-1,131.91-53.89,159.55-84.49,31.1-36.17,31.1-70.64,19.27-90.25-16.74-29.92-69.47-33-92.79,16.73C62.78-179.86,98.7-93.8,159-81.63S302.7-99.55,393.3-269.92c29.86-58.16,52.85-114.71,46.14-150.08-7.44-39.21-59.74-54.5-92.87-8.7-47,65-61.78,266.62-34.74,308.53S416.62-58,481.52-130.31s133.2-188.56,146.54-256.23c14-71.15-56.94-94.64-88.4-47.32C500.53-375,467.58-229.49,503.3-127a73.73,73.73,0,0,0,23.43,33.67c25.49,20.23,55.1,16,77.46,6.32a111.25,111.25,0,0,0,30.44-19.87c37.73-34.23,29-36.71,64.58-127.53C724-284.3,785-298.63,821-259.13a71,71,0,0,1,13.69,22.56c17.68,46,6.81,80-6.81,107.89-12,24.62-34.56,42.72-61.45,47.91-23.06,4.45-48.37-.35-66.48-24.27a78.88,78.88,0,0,1-12.66-25.8c-14.75-51,4.14-88.76,11-101.41,6.18-11.39,37.26-69.61,103.42-42.24,55.71,23.05,100.66-23.31,100.66-23.31" transform="translate(311.08 476.02)" style="fill:none;stroke-linecap:round;stroke-miterlimit:10;stroke-width:35px" />
             </svg>
         </div>
-        <div id="disclaimerText" class="px-8 text-center text-sm font-medium text-gray-500 dark:text-gray-400 max-w-3xl mb-8 hidden fade-in leading-relaxed"></div>
-        <div id="clickToEnterPrompt" class="mb-12 opacity-0 transition-opacity duration-1000 pulse-text text-gray-400 font-bold tracking-widest uppercase text-sm">
+        <div id="disclaimerText" class="px-8 text-center text-sm font-medium text-gray-700 dark:text-gray-300 max-w-3xl mb-8 hidden fade-in leading-relaxed"></div>
+        <div id="clickToEnterPrompt" class="mb-12 opacity-0 transition-opacity duration-1000 pulse-text text-gray-600 dark:text-gray-300 font-semibold tracking-widest uppercase text-xs">
             click to enter
         </div>
     </div>
 
     <!-- App Loader -->
-    <div id="appLoader" class="fixed inset-0 bg-gray-50 dark:bg-darkbg z-[60] hidden flex-col items-center justify-center transition-opacity duration-500">
+    <div id="appLoader" class="fixed inset-0 liquid-glass-strong z-[60] hidden flex-col items-center justify-center transition-opacity duration-500">
         <i class="fa-solid fa-circle-notch fa-spin text-5xl md:text-6xl text-[var(--accent-bg)] mb-8 drop-shadow-sm"></i>
-        <div id="loaderPercentage" class="text-gray-900 dark:text-white text-3xl md:text-4xl font-black tracking-widest font-mono">0%</div>
+        <div id="loaderPercentage" class="text-gray-900 dark:text-white text-3xl md:text-4xl font-bold tracking-widest font-mono">0%</div>
     </div>
 
-    <div id="settingsModal" class="fixed inset-0 bg-white/95 dark:bg-darkbg/95 backdrop-blur-sm z-[100] hidden flex-col fade-in overflow-y-auto">
-        <div class="p-4 sm:p-8 md:p-16 max-w-3xl mx-auto w-full relative flex-grow flex flex-col justify-center">
-            <button onclick="toggleSettings(false)" class="absolute top-3 right-3 sm:top-8 sm:right-8 text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 w-10 h-10 flex items-center justify-center shadow-sm">
-                <i class="fa-solid fa-xmark text-lg"></i>
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/35 backdrop-blur-xl z-[100] hidden flex-col fade-in overflow-y-auto p-6">
+        <div class="p-8 md:p-12 max-w-3xl mx-auto my-auto w-full relative liquid-glass-strong rounded-3xl">
+            <button onclick="toggleSettings(false)" class="absolute top-8 right-8 text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors liquid-glass rounded-full w-10 h-10 flex items-center justify-center">
+                <i class="fa-solid fa-xmark text-base"></i>
             </button>
-            <h2 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight mt-8 sm:mt-0">settings</h2>
-            <p class="text-gray-500 dark:text-gray-400 mb-8 sm:mb-12">manage your preferences.</p>
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-1 tracking-tight">settings</h2>
+            <p class="text-gray-600 dark:text-gray-300 text-sm mb-8">manage your centauri gamma preferences.</p>
             
-            <div class="space-y-4 sm:space-y-6">
+            <div class="space-y-4">
                 <!-- Theme Select -->
-                <div class="flex items-center justify-between p-5 bg-gray-50 dark:bg-cardbg border border-gray-100 dark:border-gray-800 shadow-sm">
+                <div class="flex items-center justify-between p-4 rounded-2xl liquid-glass">
                     <div>
-                        <span class="text-gray-900 dark:text-white text-base font-bold block">appearance</span>
-                        <span class="text-gray-500 dark:text-gray-400 text-sm">switch between light and dark mode.</span>
+                        <span class="text-gray-900 dark:text-white text-sm font-semibold block">appearance</span>
+                        <span class="text-gray-600 dark:text-gray-400 text-xs">switch between light and dark liquid glass.</span>
                     </div>
-                    <select id="settingTheme" onchange="applyTheme(this.value); saveSettings();" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm block p-2 outline-none font-bold shadow-sm">
-                        <option value="dark">dark</option>
-                        <option value="light">light</option>
+                    <select id="settingTheme" onchange="applyTheme(this.value); saveSettings();" class="liquid-glass rounded-xl text-gray-900 dark:text-white text-xs block px-3 py-2 outline-none font-semibold">
+                        <option value="dark" class="bg-gray-900 text-white">dark</option>
+                        <option value="light" class="bg-white text-gray-900">light</option>
                     </select>
                 </div>
 
                 <!-- Custom Accent -->
-                <div class="flex items-center justify-between p-5 bg-gray-50 dark:bg-cardbg border border-gray-100 dark:border-gray-800 shadow-sm">
+                <div class="flex items-center justify-between p-4 rounded-2xl liquid-glass">
                     <div>
-                        <span class="text-gray-900 dark:text-white text-base font-bold block">accent color</span>
-                        <span class="text-gray-500 dark:text-gray-400 text-sm">pick a custom highlight color.</span>
+                        <span class="text-gray-900 dark:text-white text-sm font-semibold block">accent color</span>
+                        <span class="text-gray-600 dark:text-gray-400 text-xs">pick a custom highlight color.</span>
                     </div>
-                    <input type="color" id="settingAccent" class="w-10 h-10 cursor-pointer bg-transparent border-0 p-0" oninput="previewAccent(this.value)" onchange="saveSettings()">
+                    <input type="color" id="settingAccent" class="w-9 h-9 rounded-lg cursor-pointer bg-transparent border-0 p-0" oninput="previewAccent(this.value)" onchange="saveSettings()">
                 </div>
 
-                <div class="flex items-center justify-between p-5 bg-gray-50 dark:bg-cardbg border border-gray-100 dark:border-gray-800 shadow-sm">
+                <div class="flex items-center justify-between p-4 rounded-2xl liquid-glass">
                     <div>
-                        <span class="text-gray-900 dark:text-white text-base font-bold block">launch mode</span>
-                        <span class="text-gray-500 dark:text-gray-400 text-sm">how should games open?</span>
+                        <span class="text-gray-900 dark:text-white text-sm font-semibold block">launch mode</span>
+                        <span class="text-gray-600 dark:text-gray-400 text-xs">how should games open?</span>
                     </div>
-                    <select id="settingLaunchMode" onchange="saveSettings()" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm block p-2 outline-none font-bold shadow-sm">
-                        <option value="cloak">stealth (about:blank)</option>
-                        <option value="modal">in-app (modal)</option>
-                        <option value="direct">direct link</option>
+                    <select id="settingLaunchMode" onchange="saveSettings()" class="liquid-glass rounded-xl text-gray-900 dark:text-white text-xs block px-3 py-2 outline-none font-semibold">
+                        <option value="cloak" class="bg-gray-900 text-white">isolated tab (about:blank)</option>
+                        <option value="modal" class="bg-gray-900 text-white">in-app (modal)</option>
+                        <option value="direct" class="bg-gray-900 text-white">direct link</option>
                     </select>
                 </div>
 
-                <div class="flex items-center justify-between p-5 bg-gray-50 dark:bg-cardbg border border-gray-100 dark:border-gray-800 shadow-sm">
+                <div class="flex items-center justify-between p-4 rounded-2xl liquid-glass">
                     <div>
-                        <span class="text-gray-900 dark:text-white text-base font-bold block">view layout</span>
-                        <span class="text-gray-500 dark:text-gray-400 text-sm">choose how games are displayed.</span>
+                        <span class="text-gray-900 dark:text-white text-sm font-semibold block">view layout</span>
+                        <span class="text-gray-600 dark:text-gray-400 text-xs">choose how games are displayed.</span>
                     </div>
-                    <select id="settingViewMode" onchange="saveSettings(); renderContent();" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm block p-2 outline-none font-bold shadow-sm">
-                        <option value="grid">grid</option>
-                        <option value="list">list</option>
+                    <select id="settingViewMode" onchange="saveSettings(); renderContent();" class="liquid-glass rounded-xl text-gray-900 dark:text-white text-xs block px-3 py-2 outline-none font-semibold">
+                        <option value="grid" class="bg-gray-900 text-white">grid</option>
+                        <option value="list" class="bg-gray-900 text-white">list</option>
                     </select>
                 </div>
 
-                <div class="flex items-center justify-between p-5 bg-gray-50 dark:bg-cardbg border border-gray-100 dark:border-gray-800 shadow-sm">
+                <div class="flex items-center justify-between p-4 rounded-2xl liquid-glass">
                     <div>
-                        <span class="text-gray-900 dark:text-white text-base font-bold block">auto-format titles</span>
-                        <span class="text-gray-500 dark:text-gray-400 text-sm">use ai to clean up raw file names.</span>
+                        <span class="text-gray-900 dark:text-white text-sm font-semibold block">auto-format titles</span>
+                        <span class="text-gray-600 dark:text-gray-400 text-xs">use ai to clean up raw file names.</span>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="toggleAI" class="sr-only peer" onchange="saveSettings()">
-                        <div class="w-11 h-6 bg-gray-300 dark:bg-gray-700 after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:bg-green-500 transition-colors"></div>
+                        <div class="w-11 h-6 bg-gray-400/40 dark:bg-gray-700 rounded-full after:rounded-full after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:bg-green-500 transition-colors"></div>
                     </label>
                 </div>
                 
-                <div class="flex items-center justify-between p-5 bg-gray-50 dark:bg-cardbg border border-gray-100 dark:border-gray-800 shadow-sm">
+                <div class="flex items-center justify-between p-4 rounded-2xl liquid-glass">
                     <div>
-                        <span class="text-gray-900 dark:text-white text-base font-bold block">interface sounds</span>
-                        <span class="text-gray-500 dark:text-gray-400 text-sm">play audio cues when hovering cards.</span>
+                        <span class="text-gray-900 dark:text-white text-sm font-semibold block">interface sounds</span>
+                        <span class="text-gray-600 dark:text-gray-400 text-xs">play audio cues when hovering cards.</span>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="toggleSound" class="sr-only peer" onchange="saveSettings()">
-                        <div class="w-11 h-6 bg-gray-300 dark:bg-gray-700 after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:bg-green-500 transition-colors"></div>
+                        <div class="w-11 h-6 bg-gray-400/40 dark:bg-gray-700 rounded-full after:rounded-full after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:bg-green-500 transition-colors"></div>
                     </label>
                 </div>
 
-                <div class="flex items-center justify-between p-5 bg-gray-50 dark:bg-cardbg border border-gray-100 dark:border-gray-800 shadow-sm">
+                <div class="flex items-center justify-between p-4 rounded-2xl liquid-glass">
                     <div>
-                        <span class="text-gray-900 dark:text-white text-base font-bold block">global music</span>
-                        <span class="text-gray-500 dark:text-gray-400 text-sm">play background music globally.</span>
+                        <span class="text-gray-900 dark:text-white text-sm font-semibold block">global music</span>
+                        <span class="text-gray-600 dark:text-gray-400 text-xs">play background music globally.</span>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="toggleMusic" class="sr-only peer" onchange="saveSettings()">
-                        <div class="w-11 h-6 bg-gray-300 dark:bg-gray-700 after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:bg-green-500 transition-colors"></div>
+                        <div class="w-11 h-6 bg-gray-400/40 dark:bg-gray-700 rounded-full after:rounded-full after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:bg-green-500 transition-colors"></div>
                     </label>
                 </div>
 
-                <div class="flex items-center justify-between p-5 bg-gray-50 dark:bg-cardbg border border-gray-100 dark:border-gray-800 shadow-sm">
+                <div class="flex items-center justify-between p-4 rounded-2xl liquid-glass">
                     <div>
-                        <span class="text-gray-900 dark:text-white text-base font-bold block">easter egg startup</span>
-                        <span class="text-gray-500 dark:text-gray-400 text-sm">replace the normal title screen with a secret sequence.</span>
+                        <span class="text-gray-900 dark:text-white text-sm font-semibold block">easter egg startup</span>
+                        <span class="text-gray-600 dark:text-gray-400 text-xs">replace the normal title screen with a secret sequence.</span>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="toggleEgg" class="sr-only peer" onchange="saveSettings()">
-                        <div class="w-11 h-6 bg-gray-300 dark:bg-gray-700 after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:bg-green-500 transition-colors"></div>
+                        <div class="w-11 h-6 bg-gray-400/40 dark:bg-gray-700 rounded-full after:rounded-full after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:bg-green-500 transition-colors"></div>
                     </label>
                 </div>
 
-                <div class="flex items-center justify-between p-5 bg-gray-50 dark:bg-cardbg border border-gray-100 dark:border-gray-800 shadow-sm">
+                <div class="flex items-center justify-between p-4 rounded-2xl liquid-glass">
                     <div>
-                        <span class="text-gray-900 dark:text-white text-base font-bold block">master volume</span>
-                        <span class="text-gray-500 dark:text-gray-400 text-sm">adjust the global audio level.</span>
+                        <span class="text-gray-900 dark:text-white text-sm font-semibold block">master volume</span>
+                        <span class="text-gray-600 dark:text-gray-400 text-xs">adjust the global audio level.</span>
                     </div>
-                    <input type="range" id="settingVolume" min="0" max="1" step="0.05" value="1" oninput="saveSettings()" class="w-32 h-2 bg-gray-200 rounded-none appearance-none cursor-pointer dark:bg-gray-700">
+                    <input type="range" id="settingVolume" min="0" max="1" step="0.05" value="1" oninput="saveSettings()" class="w-32 h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer dark:bg-gray-700">
                 </div>
 
-                <div class="pt-6 mt-4">
-                    <button onclick="resetApp()" class="px-6 py-3 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 text-sm font-bold transition-colors border border-red-200 dark:border-red-900/50 shadow-sm">
+                <div class="pt-4 flex items-center justify-between">
+                    <button onclick="resetApp()" class="px-5 py-2.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 text-red-600 dark:text-red-400 text-xs font-bold transition-colors border border-red-500/30">
                         reset all data
+                    </button>
+                    <button onclick="toggleSettings(false); openUpdateDrawer();" class="px-5 py-2.5 rounded-xl liquid-glass text-gray-800 dark:text-gray-200 text-xs font-bold transition-colors">
+                        view update log
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="gameModal" class="fixed inset-0 bg-white/95 dark:bg-darkbg/95 backdrop-blur-md z-[100] hidden flex flex-col fade-in">
-        <div class="flex justify-between items-center p-3 sm:p-4 bg-white dark:bg-cardbg border-b border-gray-200 dark:border-gray-800 shadow-sm z-10">
-            <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 pr-2">
-                <div class="w-8 h-8 flex-shrink-0 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center shadow-inner">
-                    <i class="fa-solid fa-play text-xs text-gray-600 dark:text-gray-400"></i>
+    <!-- Game Modal -->
+    <div id="gameModal" class="fixed inset-0 bg-black/60 backdrop-blur-xl z-[100] hidden flex flex-col fade-in">
+        <div class="flex justify-between items-center px-5 py-3 liquid-glass z-10">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-xl liquid-glass flex items-center justify-center">
+                    <i class="fa-solid fa-play text-xs text-gray-800 dark:text-gray-200"></i>
                 </div>
-                <h2 id="modalTitle" class="text-base sm:text-lg font-bold text-gray-900 dark:text-white tracking-tight truncate">game</h2>
+                <h2 id="modalTitle" class="text-base font-bold text-gray-900 dark:text-white tracking-tight">game</h2>
             </div>
-            <div class="flex gap-1.5 sm:gap-4 flex-shrink-0">
-                <button onclick="copyGameLink()" class="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 w-8 h-8 transition-colors text-sm flex items-center justify-center shadow-sm" title="copy link">
+            <div class="flex gap-2">
+                <button onclick="copyGameLink()" class="liquid-glass rounded-xl text-gray-700 dark:text-gray-200 hover:scale-105 w-8 h-8 transition-all text-xs flex items-center justify-center" title="copy link">
                     <i class="fa-solid fa-link"></i>
                 </button>
-                <button onclick="toggleFullscreen()" class="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 w-8 h-8 transition-colors text-sm flex items-center justify-center shadow-sm" title="fullscreen">
+                <button onclick="toggleFullscreen()" class="liquid-glass rounded-xl text-gray-700 dark:text-gray-200 hover:scale-105 w-8 h-8 transition-all text-xs flex items-center justify-center" title="fullscreen">
                     <i class="fa-solid fa-expand"></i>
                 </button>
-                <button onclick="closeGame()" class="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 w-8 h-8 transition-colors text-base flex items-center justify-center shadow-sm ml-2" title="close">
+                <button onclick="closeGame()" class="liquid-glass rounded-xl text-gray-700 dark:text-gray-200 hover:bg-red-500/20 w-8 h-8 transition-all text-sm flex items-center justify-center ml-1" title="close">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
         </div>
-        <div class="flex-grow w-full relative bg-gray-50 dark:bg-black">
-            <iframe id="gameIframe" class="absolute inset-0 w-full h-full border-0" allowfullscreen></iframe>
+        <div class="flex-grow w-full relative bg-black">
+            <iframe id="gameIframe" referrerpolicy="no-referrer" class="absolute inset-0 w-full h-full border-0" allowfullscreen></iframe>
         </div>
     </div>
 
-    <header class="bg-white dark:bg-cardbg border-b border-gray-200 dark:border-gray-800 z-30 shrink-0 shadow-sm">
-        <div class="px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <header class="liquid-glass z-30 shrink-0 mx-4 mt-4 rounded-2xl">
+        <div class="px-6 py-3.5 flex items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <!-- Topbar Banner Logo -->
-                <div class="h-8 flex items-center gap-2">
+                <!-- Topbar Banner Logo (Critical UI Asset with Two-Tier Fallback -> Kernel Halt) -->
+                <div class="h-8 flex items-center gap-2.5">
                     <div class="h-full flex items-center">
-                        <img src="assets/banner.png" alt="centauri" class="h-full object-contain" onerror="this.style.display='none'; document.getElementById('fallbackTextLogo').style.display='block';">
-                        <h1 id="fallbackTextLogo" class="hidden text-xl font-black text-gray-900 dark:text-white tracking-tight leading-none">centauri</h1>
+                        <img id="mainBannerLogo" src="assets/banner.png" alt="centauri" class="h-full object-contain" 
+                             onerror="handleAssetFallback(this, 'assets/banner.png', true)">
                     </div>
-                    <span id="appVersionBadge" class="text-[10px] uppercase font-bold tracking-widest bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 px-1.5 py-0.5 hidden shadow-inner"></span>
+                    <span id="appVersionBadge" class="text-[10px] uppercase font-bold tracking-widest liquid-glass rounded-md text-gray-700 dark:text-gray-300 px-2 py-0.5 hidden"></span>
                 </div>
             </div>
-            <div class="flex items-center justify-end gap-3 w-full sm:w-auto">
-                <div class="relative w-full sm:w-72 lg:w-80">
-                    <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-400 text-sm"></i>
-                    <input type="text" id="searchInput" placeholder="search library... (Ctrl+K)" 
-                           class="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-darkbg border border-gray-200 dark:border-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 focus:bg-white dark:focus:bg-gray-800 transition-all shadow-inner">
+            <div class="flex items-center justify-end gap-2.5 w-auto">
+                <div class="relative w-72 lg:w-80">
+                    <i class="fa-solid fa-search absolute left-3.5 top-2.5 text-gray-500 dark:text-gray-400 text-xs"></i>
+                    <input type="text" id="searchInput" placeholder="search library... (ctrl+k)" 
+                           class="w-full pl-9 pr-4 py-1.5 rounded-xl liquid-glass text-xs text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none transition-all font-medium">
                 </div>
-                <button onclick="playRandomGame()" class="w-9 h-9 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shrink-0 shadow-sm" title="surprise me">
-                    <i class="fa-solid fa-dice text-sm"></i>
+                <button onclick="openUpdateDrawer()" id="headerUpdateBtn" class="w-9 h-9 rounded-xl liquid-glass liquid-interactive flex items-center justify-center text-gray-700 dark:text-gray-200 hover:scale-105 transition-transform shrink-0 relative" title="release notes">
+                    <i class="fa-solid fa-bell text-xs"></i>
+                    <span id="updateUnreadDot" class="hidden absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-blue-500 ring-2 ring-white dark:ring-black"></span>
                 </button>
-                <button onclick="toggleSettings(true)" class="w-9 h-9 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shrink-0 shadow-sm" title="settings">
-                    <i class="fa-solid fa-sliders text-sm"></i>
+                <button onclick="playRandomGame()" class="w-9 h-9 rounded-xl liquid-glass liquid-interactive flex items-center justify-center text-gray-700 dark:text-gray-200 hover:scale-105 transition-transform shrink-0" title="surprise me">
+                    <i class="fa-solid fa-dice text-xs"></i>
+                </button>
+                <button onclick="toggleSettings(true)" class="w-9 h-9 rounded-xl liquid-glass liquid-interactive flex items-center justify-center text-gray-700 dark:text-gray-200 hover:scale-105 transition-transform shrink-0" title="settings">
+                    <i class="fa-solid fa-sliders text-xs"></i>
                 </button>
             </div>
         </div>
 
-        <div class="bg-gray-50 dark:bg-darkbg border-t border-gray-200 dark:border-gray-800">
-            <div class="px-4 sm:px-6 py-2.5 flex gap-2 overflow-x-auto custom-scrollbar" id="folderList">
+        <div class="border-t border-black/5 dark:border-white/10">
+            <div class="px-6 py-2.5 flex gap-2 overflow-x-auto custom-scrollbar" id="folderList">
                 <!-- Folders populated via JS -->
             </div>
         </div>
     </header>
 
-    <main class="flex-1 overflow-y-auto main-scrollbar bg-gray-50 dark:bg-darkbg p-4 sm:p-6 md:p-8 relative" id="mainContent">
-        <div class="mb-4 sm:mb-6 flex flex-wrap items-baseline gap-3">
-            <h2 id="currentCategoryTitle" class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">overview</h2>
-            <span id="gameCountBadge" class="text-xs font-bold text-gray-500 dark:text-gray-400 tracking-wider hidden bg-gray-200 dark:bg-gray-800 px-2 py-0.5">...</span>
+    <main class="flex-1 overflow-y-auto main-scrollbar p-6 md:p-8 relative z-10" id="mainContent">
+        <div class="mb-6 flex items-baseline gap-3">
+            <h2 id="currentCategoryTitle" class="text-3xl font-bold text-gray-900 dark:text-white tracking-tight drop-shadow-sm">overview</h2>
+            <span id="gameCountBadge" class="text-xs font-semibold text-gray-700 dark:text-gray-300 tracking-wider hidden liquid-glass rounded-full px-2.5 py-0.5">...</span>
         </div>
-        <div id="gameContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6 pb-12">
+        <div id="gameContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6 pb-12">
             <!-- Content populated via JS -->
         </div>
     </main>
 
     <script>
+        const REMOTE_ASSET_MIRROR = 'https://centaurrii.com/';
+        let kernelHalted = false;
+
+        /**
+         * Generates the mathematical 2D optical meniscus normal map for #liquidGlassLens
+         * Center pixels remain neutral (128,128) for 100% text clarity while perimeter warps light.
+         */
+        function initLiquidGlassOptics() {
+            try {
+                const size = 256;
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                const imgData = ctx.createImageData(size, size);
+                const data = imgData.data;
+                const borderThickness = 28;
+
+                for (let y = 0; y < size; y++) {
+                    for (let x = 0; x < size; x++) {
+                        const idx = (y * size + x) * 4;
+                        const distLeft = x;
+                        const distRight = size - 1 - x;
+                        const distTop = y;
+                        const distBottom = size - 1 - y;
+                        const minDist = Math.min(distLeft, distRight, distTop, distBottom);
+
+                        let r = 128;
+                        let g = 128;
+
+                        if (minDist < borderThickness) {
+                            const t = 1 - (minDist / borderThickness);
+                            const curve = Math.sin(t * Math.PI * 0.5);
+                            let nx = 0;
+                            let ny = 0;
+                            if (distLeft < borderThickness) nx -= (1 - distLeft / borderThickness);
+                            if (distRight < borderThickness) nx += (1 - distRight / borderThickness);
+                            if (distTop < borderThickness) ny -= (1 - distTop / borderThickness);
+                            if (distBottom < borderThickness) ny += (1 - distBottom / borderThickness);
+
+                            r = Math.max(0, Math.min(255, Math.round(128 + nx * curve * 95)));
+                            g = Math.max(0, Math.min(255, Math.round(128 + ny * curve * 95)));
+                        }
+
+                        data[idx] = r;
+                        data[idx + 1] = g;
+                        data[idx + 2] = 128;
+                        data[idx + 3] = 255;
+                    }
+                }
+                ctx.putImageData(imgData, 0, 0);
+                const feImg = document.getElementById('liquidNormalMap');
+                if (feImg) {
+                    feImg.setAttributeNS('http://www.w3.org/1999/xlink', 'href', canvas.toDataURL());
+                    feImg.setAttribute('href', canvas.toDataURL());
+                }
+            } catch (e) {
+                console.warn('Liquid glass optics fallback:', e);
+            }
+        }
+
+        // Cursor-tracked specular glare coordinates
+        window.addEventListener('mousemove', (e) => {
+            document.documentElement.style.setProperty('--mouse-x', e.clientX + 'px');
+            document.documentElement.style.setProperty('--mouse-y', e.clientY + 'px');
+        }, { passive: true });
+
+        // Desktop-Only Viewport Guardrail (Mobile Support Scrapped)
+        function enforceDesktopGuardrail() {
+            const guardrail = document.getElementById('desktopGuardrail');
+            if (!guardrail) return;
+            const isMobileUA = /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isSmallScreen = window.innerWidth < 768;
+            if (isMobileUA || isSmallScreen) {
+                guardrail.classList.remove('hidden');
+                guardrail.classList.add('flex');
+            } else {
+                guardrail.classList.add('hidden');
+                guardrail.classList.remove('flex');
+            }
+        }
+        window.addEventListener('resize', enforceDesktopGuardrail);
+
+        /**
+         * Critical Asset Failure Circuit Breaker (Kernel Halt)
+         */
+        function triggerKernelHalt(failedAssetPath) {
+            if (kernelHalted) return;
+            kernelHalted = true;
+
+            // Stop all audio immediately
+            ['hoverSoundElement', 'pressSoundElement', 'returnSoundElement', 'setupMusicElement', 'loadingMusicElement', 'globalMusicElement'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el && typeof el.pause === 'function') {
+                    el.pause();
+                }
+            });
+
+            const detailEl = document.getElementById('kernelHaltAssetDetail');
+            if (detailEl) {
+                detailEl.textContent = `unresolved critical resource: ${failedAssetPath} (tier 1 & tier 2 failed)`;
+            }
+
+            const haltScreen = document.getElementById('kernelHaltScreen');
+            if (haltScreen) {
+                haltScreen.classList.remove('hidden');
+                haltScreen.classList.add('flex');
+            }
+        }
+
+        /**
+         * Strict Two-Tier Asset Subsystem for DOM elements (<img>, <audio>, <video>)
+         * Tier 1: Local relative path (assets/...)
+         * Tier 2: https://centaurrii.com/assets/...
+         * Termination: If Tier 2 fails, halts immediately (triggers Kernel Halt if critical, or fails silent).
+         */
+        function handleAssetFallback(el, relativePath, isCritical = false) {
+            if (!el || kernelHalted) return;
+            const cleanPath = relativePath.replace(/^\/+/, '');
+            const tier2Url = REMOTE_ASSET_MIRROR + cleanPath;
+
+            if (!el.dataset.tier2Attempted) {
+                el.dataset.tier2Attempted = 'true';
+                el.src = tier2Url;
+                if (el.tagName === 'AUDIO' || el.tagName === 'VIDEO') {
+                    el.load();
+                }
+            } else {
+                // Tier 2 also failed -> Terminate pipeline
+                el.onerror = null;
+                if (isCritical) {
+                    triggerKernelHalt(cleanPath);
+                } else if (el.tagName === 'IMG') {
+                    el.style.display = 'none';
+                }
+            }
+        }
+
+        function handleGlobalMusicError(audioEl) {
+            if (!audioEl || kernelHalted) return;
+            const currentSrc = audioEl.getAttribute('src') || '';
+            if (!currentSrc) return;
+            if (!audioEl.dataset.tier2Attempted && !currentSrc.startsWith('http')) {
+                audioEl.dataset.tier2Attempted = 'true';
+                audioEl.src = REMOTE_ASSET_MIRROR + currentSrc.replace(/^\/+/, '');
+                audioEl.load();
+                if (state.settings.globalMusicEnabled && state.appStarted) {
+                    audioEl.play().catch(()=>{});
+                }
+            } else {
+                // Terminate silently on Tier 2 failure
+                audioEl.onerror = null;
+            }
+        }
+
+        /**
+         * Strict Two-Tier Text Fetch Helper (for version.txt, banner.txt, track.txt, disclaimer.txt, update.txt)
+         */
+        async function fetchTwoTierText(relativePath) {
+            const cleanPath = relativePath.replace(/^\/+/, '');
+            // Tier 1: Local path
+            try {
+                const r1 = await fetch(cleanPath, { cache: 'no-store' });
+                if (r1.ok) {
+                    const t1 = await r1.text();
+                    if (t1 && !t1.trim().toLowerCase().startsWith('<!doctype html')) return t1;
+                }
+            } catch (e) {}
+
+            // Tier 2: Remote Live Mirror (https://centaurrii.com/assets/...)
+            try {
+                const r2 = await fetch(REMOTE_ASSET_MIRROR + cleanPath, { cache: 'no-store' });
+                if (r2.ok) {
+                    const t2 = await r2.text();
+                    if (t2 && !t2.trim().toLowerCase().startsWith('<!doctype html')) return t2;
+                }
+            } catch (e) {}
+
+            // Terminate pipeline if both tiers fail
+            return null;
+        }
+
+        /**
+         * Delta Update Notification Subsystem (assets/update.txt)
+         */
+        let latestUpdateText = '';
+        let latestUpdateDigest = '';
+
+        function hashUpdateString(str) {
+            let hash = 5381;
+            for (let i = 0; i < str.length; i++) {
+                hash = ((hash << 5) + hash) + str.charCodeAt(i);
+            }
+            return 'gamma_' + (hash >>> 0).toString(16) + '_' + str.length;
+        }
+
+        async function checkDeltaUpdate() {
+            const rawUpdate = await fetchTwoTierText('assets/update.txt');
+            const notesEl = document.getElementById('updateNotesContent');
+            if (!rawUpdate || !rawUpdate.trim()) {
+                if (notesEl) notesEl.textContent = 'no recent update notes found.';
+                return;
+            }
+
+            latestUpdateText = rawUpdate.trim();
+            latestUpdateDigest = hashUpdateString(latestUpdateText);
+            if (notesEl) notesEl.textContent = latestUpdateText;
+
+            const lastSeenDigest = localStorage.getItem('centauri_last_seen_update');
+            if (lastSeenDigest !== latestUpdateDigest) {
+                const toast = document.getElementById('updateToastPill');
+                const dot = document.getElementById('updateUnreadDot');
+                if (toast) {
+                    toast.classList.remove('hidden');
+                    toast.classList.add('flex');
+                }
+                if (dot) dot.classList.remove('hidden');
+            }
+        }
+
+        function openUpdateDrawer() {
+            playPressSound();
+            dismissUpdateToast();
+            const modal = document.getElementById('updateModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+            if (latestUpdateDigest) {
+                localStorage.setItem('centauri_last_seen_update', latestUpdateDigest);
+            }
+        }
+
+        function closeUpdateDrawer() {
+            playReturnSound();
+            const modal = document.getElementById('updateModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function dismissUpdateToast() {
+            const toast = document.getElementById('updateToastPill');
+            const dot = document.getElementById('updateUnreadDot');
+            if (toast) {
+                toast.classList.add('hidden');
+                toast.classList.remove('flex');
+            }
+            if (dot) dot.classList.add('hidden');
+            if (latestUpdateDigest) {
+                localStorage.setItem('centauri_last_seen_update', latestUpdateDigest);
+            }
+        }
+
+        // Favicon Two-Tier Check
+        (function verifyFavicon() {
+            const favImg = new Image();
+            favImg.onerror = () => {
+                const link = document.getElementById('faviconLink');
+                if (link) link.href = REMOTE_ASSET_MIRROR + 'assets/favicon.png';
+            };
+            favImg.src = 'assets/favicon.png';
+        })();
+
+        // Initialize Optics & Desktop Guardrail
+        initLiquidGlassOptics();
+        enforceDesktopGuardrail();
+
+        // --- STREAMING_CHUNK:Initializing State, Audio Controllers, and Startup Logic... -->
         const state = {
             games: [], topLevelFolders: [], currentFolder: null, searchQuery: '', featuredGames: [],
             favorites: JSON.parse(localStorage.getItem('centauri_favorites')) || [],
@@ -449,7 +910,7 @@
 
         function fadeInGlobalMusic() {
             const audio = document.getElementById('globalMusicElement');
-            if (!audio || !state.settings.globalMusicEnabled) return;
+            if (!audio || !state.settings.globalMusicEnabled || kernelHalted) return;
             clearInterval(globalMusicFadeInterval);
             audio.volume = 0;
             audio.play().catch(()=>{});
@@ -470,24 +931,30 @@
         let audioUnlocked = false;
 
         function unlockAudioEvents() {
-            if (!audioUnlocked) {
+            if (!audioUnlocked && !kernelHalted) {
                 audioUnlocked = true;
                 
-                // Fetch and prepare playlist immediately upon unlock
-                fetch('assets/track.txt').then(r => r.ok ? r.text() : '').then(text => {
-                    const lines = text.split('\n').map(l => l.trim()).filter(l => l.startsWith('http') || l.startsWith('assets/'));
-                    if(lines.length > 0) state.playlist = lines;
-                    else state.playlist = ['assets/menu.mp3']; // fallback
-                    document.getElementById('globalMusicElement').src = state.playlist[0];
-                }).catch(() => {
-                    state.playlist = ['assets/menu.mp3'];
-                    document.getElementById('globalMusicElement').src = state.playlist[0];
+                // Fetch and prepare playlist immediately upon unlock via Two-Tier Subsystem
+                fetchTwoTierText('assets/track.txt').then(text => {
+                    const globalMusicElement = document.getElementById('globalMusicElement');
+                    if (text) {
+                        const lines = text.split('\n').map(l => l.trim()).filter(l => l.startsWith('http') || l.startsWith('assets/'));
+                        if (lines.length > 0) state.playlist = lines;
+                        else state.playlist = ['assets/menu.mp3'];
+                    } else {
+                        state.playlist = ['assets/menu.mp3'];
+                    }
+                    if (globalMusicElement) {
+                        delete globalMusicElement.dataset.tier2Attempted;
+                        globalMusicElement.src = state.playlist[0];
+                    }
                 });
 
                 const globalMusicElement = document.getElementById('globalMusicElement');
                 globalMusicElement.addEventListener('ended', function() {
                     if (state.playlist.length > 0) {
                         state.currentTrackIndex = (state.currentTrackIndex + 1) % state.playlist.length;
+                        delete this.dataset.tier2Attempted;
                         this.src = state.playlist[state.currentTrackIndex];
                         this.play().catch(()=>{});
                     } else {
@@ -525,7 +992,7 @@
         document.body.addEventListener('keydown', unlockAudioEvents, true);
 
         document.body.addEventListener('click', () => {
-            if (state.appStarted && document.getElementById('appLoader').classList.contains('hidden')) {
+            if (state.appStarted && !kernelHalted && document.getElementById('appLoader').classList.contains('hidden')) {
                 if (state.settings.globalMusicEnabled && document.getElementById('gameModal').classList.contains('hidden') && document.getElementById('settingsModal').classList.contains('hidden')) {
                     const globalMusic = document.getElementById('globalMusicElement');
                     if (globalMusic && globalMusic.paused) {
@@ -536,14 +1003,14 @@
         });
 
         function playPressSound() {
-            if (!state.settings.hoverSoundsEnabled) return;
+            if (!state.settings.hoverSoundsEnabled || kernelHalted) return;
             const audioEl = document.getElementById('pressSoundElement');
             const vol = state.settings.volume !== undefined ? state.settings.volume : 1.0;
             if (audioEl) { audioEl.currentTime = 0; audioEl.volume = 0.5 * vol; audioEl.play().catch(()=>{}); }
         }
 
         function playReturnSound() {
-            if (!state.settings.hoverSoundsEnabled) return;
+            if (!state.settings.hoverSoundsEnabled || kernelHalted) return;
             const audioEl = document.getElementById('returnSoundElement');
             const vol = state.settings.volume !== undefined ? state.settings.volume : 1.0;
             if (audioEl) { audioEl.currentTime = 0; audioEl.volume = 0.5 * vol; audioEl.play().catch(()=>{}); }
@@ -551,7 +1018,7 @@
 
         // "88888888" Secret Bypass Listener
         window.addEventListener('keydown', (e) => {
-            if (state.appStarted) return; // ignore if app already running
+            if (state.appStarted || kernelHalted) return;
             cheatBuffer += e.key;
             if (cheatBuffer.length > 8) cheatBuffer = cheatBuffer.slice(-8);
             if (cheatBuffer === "88888888") {
@@ -587,7 +1054,6 @@
         }
 
         function saveSettings() {
-            // Get from Settings Modal
             state.settings.theme = document.getElementById('settingTheme').value;
             state.settings.aiRenamerEnabled = document.getElementById('toggleAI').checked;
             state.settings.hoverSoundsEnabled = document.getElementById('toggleSound').checked;
@@ -639,7 +1105,6 @@
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
                 
-                // Fade out global music and play the setup/settings loop
                 fadeOutGlobalMusic();
                 if (setupMusic) {
                     setupMusic.volume = 0.5 * (state.settings.volume !== undefined ? state.settings.volume : 1.0);
@@ -649,7 +1114,6 @@
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
                 
-                // Fade out the settings loop cleanly
                 if (setupMusic) {
                     let vol = setupMusic.volume;
                     let fadeOut = setInterval(() => {
@@ -670,6 +1134,7 @@
         function resetApp() {
             localStorage.removeItem('centauri_settings');
             localStorage.removeItem('centauri_setup_complete');
+            localStorage.removeItem('centauri_last_seen_update');
             location.reload();
         }
 
@@ -722,8 +1187,9 @@
             document.getElementById('countdownTimer').textContent = display;
         }
 
-        // --- SETUP WIZARD & STARTUP FLOW REFACTOR ---
+        // --- SETUP WIZARD & STARTUP FLOW ---
         function checkSetupStatus() {
+            if (kernelHalted) return;
             playPressSound();
             const startupScreen = document.getElementById('startupScreen');
             
@@ -834,21 +1300,22 @@
         }
 
         function startHelloSequence() {
-            // Check for disclaimer
-            fetch('assets/disclaimer.txt').then(r => {
-                if(r.ok) return r.text();
-                throw new Error();
-            }).then(text => {
-                const disc = document.getElementById('disclaimerText');
-                if(text.trim()) { disc.textContent = text; disc.classList.remove('hidden'); }
-            }).catch(()=>{});
+            // Check for disclaimer via Two-Tier Subsystem
+            fetchTwoTierText('assets/disclaimer.txt').then(text => {
+                if (text && text.trim()) {
+                    const disc = document.getElementById('disclaimerText');
+                    if (disc) {
+                        disc.textContent = text.trim();
+                        disc.classList.remove('hidden');
+                    }
+                }
+            });
 
             const startupScreen = document.getElementById('startupScreen');
             startupScreen.classList.remove('hidden');
             document.querySelector('.hello__svg').classList.add('start-anim');
             
-            // Try to start music if audio is already unlocked (e.g. they typed the bypass code)
-            if (audioUnlocked) {
+            if (audioUnlocked && !kernelHalted) {
                 const setupMusic = document.getElementById('setupMusicElement');
                 if (setupMusic && setupMusic.paused) {
                     setupMusic.volume = 0.5 * (state.settings.volume !== undefined ? state.settings.volume : 1.0);
@@ -858,7 +1325,7 @@
 
             setTimeout(() => {
                 const prompt = document.getElementById('clickToEnterPrompt');
-                prompt.classList.remove('opacity-0');
+                if (prompt) prompt.classList.remove('opacity-0');
             }, 5000);
         }
 
@@ -866,9 +1333,9 @@
         loadSettings();
         startCountdownCheck();
 
-        // --- STREAMING_CHUNK:App Core Functions ---
+        // --- STREAMING_CHUNK:Configuring Catalog Loader, Liquid Glass Cards, and Two-Tier Game Thumbnails... -->
         function enterApp() {
-            if (state.appStarted) return;
+            if (state.appStarted || kernelHalted) return;
             state.appStarted = true;
             
             const setupMusic = document.getElementById('setupMusicElement');
@@ -890,6 +1357,7 @@
             }
             
             fetchVersionAndBanner();
+            checkDeltaUpdate();
 
             const appLoader = document.getElementById('appLoader');
             appLoader.classList.remove('hidden');
@@ -898,7 +1366,7 @@
         }
 
         function manageGlobalMusic() {
-            const globalMusic = document.getElementById('globalMusicElement');
+            if (kernelHalted) return;
             if(state.settings.globalMusicEnabled && state.appStarted && 
                document.getElementById('gameModal').classList.contains('hidden') && 
                document.getElementById('settingsModal').classList.contains('hidden')) {
@@ -910,7 +1378,7 @@
 
         let lastHoverTime = 0;
         function playHoverSound() {
-            if (!state.settings.hoverSoundsEnabled) return;
+            if (!state.settings.hoverSoundsEnabled || kernelHalted) return;
             const now = Date.now();
             if (now - lastHoverTime > 50) {
                 const audioEl = document.getElementById('hoverSoundElement');
@@ -944,10 +1412,7 @@
         }
 
         function getGameBannerHtml(game) {
-            return `<img src="assets/fallback.png" alt="fallback" class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 z-10" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    <div class="hidden absolute inset-0 w-full h-full bg-gray-200 dark:bg-gray-800 flex-col items-center justify-center z-0">
-                        <i class="fa-solid fa-gamepad text-gray-400 dark:text-gray-600 text-5xl group-hover:scale-110 transition-transform duration-300"></i>
-                    </div>`;
+            return `<img src="assets/fallback.png" alt="" class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 z-10" onerror="handleAssetFallback(this, 'assets/fallback.png', false)">`;
         }
 
         async function fetchGitHubCatalog() {
@@ -968,7 +1433,7 @@
                 if (!response.ok) throw new Error("GitHub API Error");
                 
                 const data = await response.json();
-                const targetPrefix = 'assets/ugs/';
+                const targetPrefix = atob('YXNzZXRzL3Vncy8=');
                 const foldersSet = new Set();
                 let parsedGames = [];
 
@@ -983,7 +1448,7 @@
                         if (pathParts.length > 0) foldersSet.add(pathParts[0]);
                         
                         const rawTitle = fileName.replace('.html', '').replace(/[-_]/g, ' ');
-                        const url = 'https://centaurrii.com/' + node.path;
+                        const url = REMOTE_ASSET_MIRROR + node.path;
                         const cleanTitle = rawTitle.charAt(0).toUpperCase() + rawTitle.slice(1);
 
                         parsedGames.push({
@@ -996,7 +1461,6 @@
                 state.games = parsedGames;
                 state.topLevelFolders = Array.from(foldersSet).sort();
                 
-                // Set up featured games (exclude unsorted from ever appearing in featured)
                 const eligibleForFeatured = parsedGames.filter(g => !g.folderPath.toLowerCase().includes('unsorted'));
                 state.featuredGames = [...eligibleForFeatured].sort(() => 0.5 - Math.random()).slice(0, 12);
                 state.currentFolder = 'featured';
@@ -1012,7 +1476,6 @@
                             appLoader.classList.remove('flex');
                             appLoader.classList.add('hidden'); 
                             
-                            // Smoothly fade out loading loop and start global menu music
                             const loadingMusic = document.getElementById('loadingMusicElement');
                             if (loadingMusic) {
                                 let vol = loadingMusic.volume;
@@ -1055,7 +1518,6 @@
                 if (percentageEl) percentageEl.textContent = "ERR";
                 setTimeout(() => {
                     if (appLoader) appLoader.classList.add('hidden');
-                    // Stop loading loop on error
                     const loadingMusic = document.getElementById('loadingMusicElement');
                     if (loadingMusic) {
                         loadingMusic.pause();
@@ -1063,13 +1525,12 @@
                     }
                 }, 1500);
                 document.getElementById('gameContainer').innerHTML = 
-                    `<div class="col-span-full flex justify-center h-64 text-center">
+                    `<div class="col-span-full flex justify-center items-center h-64 text-center liquid-glass rounded-3xl p-8">
                         <h3 class="text-lg font-semibold">connection failed.</h3>
                     </div>`;
             }
         }
 
-        // Helper function to calculate readable text contrast against dynamic hex backgrounds
         function getContrastColor(colorStr) {
             let r, g, b;
             colorStr = colorStr.trim();
@@ -1091,52 +1552,43 @@
 
         function renderTopbar() {
             const list = document.getElementById('folderList');
-            let htmlArray = []; // OPTIMIZATION: Array joining is faster than string concatenation
+            let htmlArray = [];
             
-            // Read active accent color from CSS properties and calculate optimal contrast text
             const computedAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent-bg') || '#111827';
             const dynamicTextColor = getContrastColor(computedAccent);
 
-            // Add featured tab first
+            const pillBase = 'hover-sound liquid-interactive flex-shrink-0 px-4 py-1.5 rounded-xl text-xs font-semibold tracking-wider transition-all flex items-center gap-2';
+
+            // Featured Tab
             const isFeaturedActive = state.currentFolder === 'featured';
-            const featuredClasses = isFeaturedActive 
-                ? 'border-transparent shadow-sm' 
-                : 'bg-white dark:bg-cardbg text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white';
-            
+            const featuredClasses = isFeaturedActive ? 'shadow-md scale-[1.02]' : 'liquid-glass text-gray-700 dark:text-gray-200 hover:scale-[1.02]';
             const featuredStyle = isFeaturedActive ? `background-color: var(--accent-bg); color: ${dynamicTextColor};` : '';
-            htmlArray.push(`<button onclick="selectFolder('featured')" style="${featuredStyle}" class="hover-sound flex-shrink-0 px-4 py-1.5 text-sm font-bold tracking-wider transition-colors flex items-center gap-2 border ${featuredClasses}">
-                    <i class="fa-solid fa-star"></i><span>featured</span></button>`);
+            htmlArray.push(`<button onclick="selectFolder('featured')" style="${featuredStyle}" class="${pillBase} ${featuredClasses}">
+                    <i class="fa-solid fa-star text-[11px]"></i><span>featured</span></button>`);
 
-            // Add Favorites Tab
+            // Favorites Tab
             const favActive = state.currentFolder === 'favorites';
-            const favClasses = favActive 
-                ? 'border-transparent shadow-sm' 
-                : 'bg-white dark:bg-cardbg text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white';
+            const favClasses = favActive ? 'shadow-md scale-[1.02]' : 'liquid-glass text-gray-700 dark:text-gray-200 hover:scale-[1.02]';
             const favStyle = favActive ? `background-color: var(--accent-bg); color: ${dynamicTextColor};` : '';
-            htmlArray.push(`<button onclick="selectFolder('favorites')" style="${favStyle}" class="hover-sound flex-shrink-0 px-4 py-1.5 text-sm font-bold tracking-wider transition-colors flex items-center gap-2 border ${favClasses}">
-                    <i class="fa-solid fa-heart"></i><span>favorites</span></button>`);
+            htmlArray.push(`<button onclick="selectFolder('favorites')" style="${favStyle}" class="${pillBase} ${favClasses}">
+                    <i class="fa-solid fa-heart text-[11px]"></i><span>favorites</span></button>`);
 
-            // Add Recent Tab
+            // Recent Tab
             const recentActive = state.currentFolder === 'recent';
-            const recentClasses = recentActive 
-                ? 'border-transparent shadow-sm' 
-                : 'bg-white dark:bg-cardbg text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white';
+            const recentClasses = recentActive ? 'shadow-md scale-[1.02]' : 'liquid-glass text-gray-700 dark:text-gray-200 hover:scale-[1.02]';
             const recentStyle = recentActive ? `background-color: var(--accent-bg); color: ${dynamicTextColor};` : '';
-            htmlArray.push(`<button onclick="selectFolder('recent')" style="${recentStyle}" class="hover-sound flex-shrink-0 px-4 py-1.5 text-sm font-bold tracking-wider transition-colors flex items-center gap-2 border ${recentClasses}">
-                    <i class="fa-solid fa-clock-rotate-left"></i><span>recent</span></button>`);
+            htmlArray.push(`<button onclick="selectFolder('recent')" style="${recentStyle}" class="${pillBase} ${recentClasses}">
+                    <i class="fa-solid fa-clock-rotate-left text-[11px]"></i><span>recent</span></button>`);
 
             state.topLevelFolders.forEach(folder => {
                 const isActive = state.currentFolder === folder;
-                const activeClasses = isActive 
-                    ? 'border-transparent shadow-sm' 
-                    : 'bg-white dark:bg-cardbg text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white';
-                
+                const activeClasses = isActive ? 'shadow-md scale-[1.02]' : 'liquid-glass text-gray-700 dark:text-gray-200 hover:scale-[1.02]';
                 const activeStyle = isActive ? `background-color: var(--accent-bg); color: ${dynamicTextColor};` : '';
                 const icon = getCategoryIcon(folder);
                 const displayName = folder.replace(/[-_]/g, ' ').toLowerCase();
 
-                htmlArray.push(`<button onclick="selectFolder('${folder}')" style="${activeStyle}" class="hover-sound flex-shrink-0 px-4 py-1.5 text-sm font-bold tracking-wider transition-colors flex items-center gap-2 border ${activeClasses}">
-                        <i class="fa-solid ${icon}"></i><span>${displayName}</span></button>`);
+                htmlArray.push(`<button onclick="selectFolder('${folder}')" style="${activeStyle}" class="${pillBase} ${activeClasses}">
+                        <i class="fa-solid ${icon} text-[11px]"></i><span>${displayName}</span></button>`);
             });
             list.innerHTML = htmlArray.join('');
         }
@@ -1157,12 +1609,12 @@
             if (!state.currentFolder && !state.searchQuery) {
                 document.getElementById('currentCategoryTitle').textContent = getGreeting();
                 container.innerHTML = 
-                    `<div class="col-span-full flex flex-col items-center justify-center h-[50vh] text-center fade-in">
-                        <div class="w-16 h-16 bg-white dark:bg-cardbg flex items-center justify-center mb-4 border border-gray-200 dark:border-gray-800 shadow-sm">
-                            <i class="fa-solid fa-folder-open text-2xl text-gray-400 dark:text-gray-500"></i>
+                    `<div class="col-span-full flex flex-col items-center justify-center h-[50vh] text-center fade-in liquid-glass rounded-3xl p-8">
+                        <div class="w-16 h-16 rounded-2xl liquid-glass flex items-center justify-center mb-4">
+                            <i class="fa-solid fa-folder-open text-2xl text-gray-700 dark:text-gray-200"></i>
                         </div>
-                        <h2 class="text-2xl font-black mb-2">select a category</h2>
-                        <p class="text-gray-500 dark:text-gray-400 max-w-sm font-medium">browse the navigation bar or search.</p>
+                        <h2 class="text-2xl font-bold mb-1">select a category</h2>
+                        <p class="text-gray-600 dark:text-gray-300 max-w-sm text-sm font-medium">browse the navigation bar or search.</p>
                     </div>`;
                 return;
             }
@@ -1172,9 +1624,9 @@
 
             const isListView = state.settings.viewMode === 'list';
             if (isListView) {
-                container.className = "flex flex-col gap-3";
+                container.className = "flex flex-col gap-3 pb-12";
             } else {
-                container.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6";
+                container.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6 pb-12";
             }
 
             if (state.searchQuery) {
@@ -1185,13 +1637,13 @@
             } else if (state.currentFolder === 'favorites') {
                 filteredGames = state.games.filter(g => state.favorites.includes(g.id));
                 if (filteredGames.length === 0) {
-                    container.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center h-[40vh] text-center fade-in"><i class="fa-regular fa-heart text-4xl text-gray-300 dark:text-gray-700 mb-4"></i><h3 class="text-lg font-bold">no favorites yet</h3><p class="text-gray-500 text-sm">click the heart icon on any game to save it.</p></div>`;
+                    container.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center h-[40vh] text-center fade-in liquid-glass rounded-3xl p-8"><i class="fa-regular fa-heart text-4xl text-gray-500 dark:text-gray-400 mb-4"></i><h3 class="text-lg font-bold">no favorites yet</h3><p class="text-gray-600 dark:text-gray-300 text-sm">click the heart icon on any game to save it.</p></div>`;
                     return;
                 }
             } else if (state.currentFolder === 'recent') {
                 filteredGames = state.recentGames.map(id => state.games.find(g => g.id === id)).filter(Boolean);
                 if (filteredGames.length === 0) {
-                    container.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center h-[40vh] text-center fade-in"><i class="fa-solid fa-clock text-4xl text-gray-300 dark:text-gray-700 mb-4"></i><h3 class="text-lg font-bold">no recent games</h3><p class="text-gray-500 text-sm">games you play will appear here.</p></div>`;
+                    container.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center h-[40vh] text-center fade-in liquid-glass rounded-3xl p-8"><i class="fa-solid fa-clock text-4xl text-gray-500 dark:text-gray-400 mb-4"></i><h3 class="text-lg font-bold">no recent games</h3><p class="text-gray-600 dark:text-gray-300 text-sm">games you play will appear here.</p></div>`;
                     return;
                 }
             } else if (state.currentFolder) {
@@ -1208,15 +1660,15 @@
                 }
             }
 
-            let htmlArray = []; // OPTIMIZATION: Array joining for fast DOM paint
+            let htmlArray = [];
             subfolders.forEach(subPath => {
                 const displayName = subPath.split('/').pop().replace(/[-_]/g, ' ').toLowerCase();
                 const icon = getCategoryIcon(displayName);
-                htmlArray.push(`<button onclick="selectFolder('${subPath}')" class="hover-sound bg-white dark:bg-cardbg p-6 border border-gray-200 dark:border-gray-800 hover:border-gray-400 dark:hover:border-gray-600 transition-all flex flex-col items-center justify-center gap-3 fade-in group aspect-square shadow-sm">
-                        <div class="w-12 h-12 bg-gray-50 dark:bg-gray-800 flex items-center justify-center border border-gray-100 dark:border-gray-700 group-hover:bg-gray-100 dark:group-hover:bg-gray-700 transition-colors">
-                            <i class="fa-solid ${icon} text-xl text-gray-400 dark:text-gray-500 group-hover:text-gray-900 dark:group-hover:text-white transition-colors"></i>
+                htmlArray.push(`<button onclick="selectFolder('${subPath}')" class="hover-sound game-card liquid-glass liquid-interactive rounded-2xl p-6 transition-all flex flex-col items-center justify-center gap-3 fade-in group aspect-square">
+                        <div class="w-12 h-12 rounded-2xl liquid-glass flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fa-solid ${icon} text-xl text-gray-700 dark:text-gray-200"></i>
                         </div>
-                        <span class="font-bold text-gray-700 dark:text-gray-300 text-base text-center">${displayName}</span></button>`);
+                        <span class="font-semibold text-gray-900 dark:text-white text-sm text-center">${displayName}</span></button>`);
             });
 
             filteredGames.forEach((game, index) => {
@@ -1224,33 +1676,32 @@
                 const isHero = state.currentFolder === 'featured' && index === 0 && !isListView;
                 
                 if (isListView) {
-                    htmlArray.push(`<div onclick="openGame('${game.url}', '${game.title.replace(/'/g, "\\'")}')" class="hover-sound flex items-center justify-between p-4 bg-white dark:bg-cardbg border border-gray-200 dark:border-gray-800 hover:border-gray-400 dark:hover:border-gray-600 shadow-sm hover:shadow-md cursor-pointer group transition-all">
-                        <div class="flex items-center gap-3 sm:gap-4 min-w-0">
-                            <div class="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center relative overflow-hidden">
-                                <img src="assets/fallback.png" class="absolute inset-0 w-full h-full object-cover z-10" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');">
-                                <i class="hidden fa-solid fa-gamepad text-gray-400 dark:text-gray-500 group-hover:scale-110 transition-transform z-0 text-sm sm:text-base"></i>
+                    htmlArray.push(`<div onclick="openGame('${game.url}', '${game.title.replace(/'/g, "\\'")}')" class="hover-sound flex items-center justify-between p-3.5 rounded-2xl liquid-glass liquid-interactive cursor-pointer group transition-all">
+                        <div class="flex items-center gap-4">
+                            <div class="w-11 h-11 rounded-xl flex-shrink-0 liquid-glass flex items-center justify-center relative overflow-hidden">
+                                <img src="assets/fallback.png" class="absolute inset-0 w-full h-full object-cover z-10" onerror="handleAssetFallback(this, 'assets/fallback.png', false)">
                             </div>
-                            <h3 id="game-title-${game.id}" class="font-bold text-base sm:text-lg text-gray-900 dark:text-white group-hover:text-[var(--accent-bg)] transition-colors truncate">${game.title.toLowerCase()}</h3>
+                            <h3 id="game-title-${game.id}" class="font-semibold text-sm text-gray-900 dark:text-white transition-colors">${game.title.toLowerCase()}</h3>
                         </div>
-                        <button onclick="event.stopPropagation(); toggleFavorite('${game.id}')" class="text-gray-300 dark:text-gray-600 hover:text-red-500 transition-colors p-2 flex-shrink-0" title="favorite">
-                            <i class="fa-${isFav ? 'solid text-red-500' : 'regular'} fa-heart text-lg sm:text-xl"></i>
+                        <button onclick="event.stopPropagation(); toggleFavorite('${game.id}')" class="text-gray-400 hover:text-red-500 transition-colors p-2 z-20" title="favorite">
+                            <i class="fa-${isFav ? 'solid text-red-500' : 'regular'} fa-heart text-base"></i>
                         </button>
                     </div>`);
                 } else {
                     const heroClasses = isHero ? "col-span-2 row-span-2 sm:col-span-2 sm:row-span-2 md:col-span-2 md:row-span-2" : "aspect-square";
-                    htmlArray.push(`<div onclick="openGame('${game.url}', '${game.title.replace(/'/g, "\\'")}')" class="hover-sound game-card border border-gray-200 dark:border-gray-800 overflow-hidden cursor-pointer fade-in relative group shadow-sm hover:shadow-md transition-shadow ${heroClasses}">
+                    htmlArray.push(`<div onclick="openGame('${game.url}', '${game.title.replace(/'/g, "\\'")}')" class="hover-sound game-card liquid-glass liquid-interactive rounded-2xl overflow-hidden cursor-pointer fade-in relative group ${heroClasses}">
                         ${getGameBannerHtml(game)}
-                        <div class="absolute bottom-0 left-0 w-full p-3 sm:p-4 pt-8 z-20 flex justify-between items-end text-white bg-gradient-to-t from-black/80 via-black/40 to-transparent backdrop-blur-[2px]">
-                            <h3 id="game-title-${game.id}" class="font-bold ${isHero ? 'text-xl md:text-3xl' : 'text-sm sm:text-base'} leading-tight drop-shadow-md pr-2 line-clamp-2">${game.title.toLowerCase()}</h3>
-                            <button onclick="event.stopPropagation(); toggleFavorite('${game.id}')" class="text-white/70 hover:text-red-400 transition-colors z-30 flex-shrink-0" title="favorite">
-                                <i class="fa-${isFav ? 'solid text-red-500' : 'regular'} fa-heart drop-shadow-md ${isHero ? 'text-xl sm:text-2xl' : 'text-sm sm:text-base'}"></i>
+                        <div class="absolute bottom-0 left-0 w-full p-4 pt-8 z-20 flex justify-between items-end text-white bg-gradient-to-t from-black/80 via-black/40 to-transparent backdrop-blur-[3px]">
+                            <h3 id="game-title-${game.id}" class="font-semibold ${isHero ? 'text-xl md:text-2xl' : 'text-sm'} leading-tight drop-shadow-md pr-2">${game.title.toLowerCase()}</h3>
+                            <button onclick="event.stopPropagation(); toggleFavorite('${game.id}')" class="text-white/80 hover:text-red-400 transition-colors z-30" title="favorite">
+                                <i class="fa-${isFav ? 'solid text-red-500' : 'regular'} fa-heart drop-shadow-md ${isHero ? 'text-xl' : 'text-sm'}"></i>
                             </button>
                         </div></div>`);
                 }
             });
 
             if (htmlArray.length === 0) {
-                container.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center h-[40vh] text-center fade-in"><h3 class="text-lg font-bold">no results found</h3></div>`;
+                container.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center h-[40vh] text-center fade-in liquid-glass rounded-3xl p-8"><h3 class="text-lg font-bold">no results found</h3></div>`;
             } else {
                 container.innerHTML = htmlArray.join('');
             }
@@ -1260,12 +1711,11 @@
             playPressSound();
             fadeOutGlobalMusic();
             
-            // Track in recent games
             const targetGame = state.games.find(g => g.title.replace(/'/g, "\\'") === title || g.url === url);
             if (targetGame) {
                 state.recentGames = state.recentGames.filter(id => id !== targetGame.id);
                 state.recentGames.unshift(targetGame.id);
-                if (state.recentGames.length > 20) state.recentGames.pop(); // Keep last 20
+                if (state.recentGames.length > 20) state.recentGames.pop();
                 localStorage.setItem('centauri_recent', JSON.stringify(state.recentGames));
             }
 
@@ -1284,11 +1734,9 @@
                     openInModal(url, title);
                 }
             } else if (mode === 'cloak') {
-                // Attempt to open the game in an about:blank cloaked tab
                 const win = window.open('about:blank', '_blank');
                 
                 if (win) {
-                    // Stealth Mode: Disguise the tab as Google
                     win.document.title = "Google"; 
                     
                     const favicon = win.document.createElement('link');
@@ -1302,6 +1750,7 @@
                     
                     const iframe = win.document.createElement('iframe');
                     iframe.src = url;
+                    iframe.referrerPolicy = 'no-referrer';
                     iframe.style.width = '100vw';
                     iframe.style.height = '100vh';
                     iframe.style.border = 'none';
@@ -1309,7 +1758,6 @@
                     
                     win.document.body.appendChild(iframe);
                     
-                    // Monitor the tab: resume global music when they close the game
                     const checkInterval = setInterval(() => {
                         if (win.closed) {
                             clearInterval(checkInterval);
@@ -1325,7 +1773,6 @@
         }
 
         function openInModal(url, title) {
-            // Fallback: If pop-ups are blocked, use the internal modal
             document.getElementById('modalTitle').textContent = title.toLowerCase();
             document.getElementById('gameModal').classList.remove('hidden');
             document.body.classList.add('overflow-hidden');
@@ -1364,7 +1811,6 @@
             document.body.removeChild(tempInput);
         }
 
-        // OPTIMIZATION: Debounce input typing by 250ms to prevent layout thrashing and CPU spikes
         let searchDebounceTimeout = null;
         document.getElementById('searchInput').addEventListener('input', e => {
             clearTimeout(searchDebounceTimeout);
@@ -1375,7 +1821,7 @@
                     state.currentFolder = null; 
                     renderTopbar(); 
                 } else {
-                    state.currentFolder = 'featured'; // Bug Fix: Restore safely to featured
+                    state.currentFolder = 'featured';
                     document.getElementById('currentCategoryTitle').textContent = 'featured';
                     renderTopbar();
                 }
@@ -1383,17 +1829,23 @@
             }, 250);
         });
 
-        // Global Hotkeys
+        // Global Desktop Hotkeys
         window.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
                 e.preventDefault();
                 document.getElementById('searchInput').focus();
+            }
+            if (e.altKey && e.key.toLowerCase() === 'r') {
+                e.preventDefault();
+                playRandomGame();
             }
             if (e.key === 'Escape') {
                 if (!document.getElementById('gameModal').classList.contains('hidden')) {
                     closeGame();
                 } else if (!document.getElementById('settingsModal').classList.contains('hidden')) {
                     toggleSettings(false);
+                } else if (!document.getElementById('updateModal').classList.contains('hidden')) {
+                    closeUpdateDrawer();
                 }
             }
         });
@@ -1406,22 +1858,21 @@
         }
 
         async function fetchVersionAndBanner() {
-            // Fetch Version
-            fetch('assets/version.txt').then(r => r.ok ? r.text() : null).then(text => {
+            // Fetch Version via Two-Tier Subsystem
+            fetchTwoTierText('assets/version.txt').then(text => {
                 if(text && text.trim()) {
                     const badge = document.getElementById('appVersionBadge');
                     badge.textContent = 'v' + text.trim();
                     badge.classList.remove('hidden');
                 }
-            }).catch(()=>{});
+            });
 
-            // Fetch Banner
-            fetch('assets/banner.txt').then(r => r.ok ? r.text() : null).then(text => {
+            // Fetch Banner via Two-Tier Subsystem
+            fetchTwoTierText('assets/banner.txt').then(text => {
                 if(text && text.trim()) {
                     let bannerText = text.trim();
                     const banner = document.getElementById('topBanner');
                     
-                    // Parse context tag $(hex)
                     const colorMatch = bannerText.match(/\$\((#[0-9A-Fa-f]{3,6})\)/);
                     let customColor = null;
                     
@@ -1430,7 +1881,7 @@
                         bannerText = bannerText.replace(colorMatch[0], '').trim();
                     }
                     
-                    if (!bannerText) return; // Hide if nothing left to display
+                    if (!bannerText) return;
                     
                     document.getElementById('topBannerText').textContent = bannerText;
                     banner.classList.remove('hidden');
@@ -1439,12 +1890,11 @@
                         banner.style.color = customColor;
                         banner.style.textShadow = `-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000`;
                     } else {
-                        // Dynamic text color for banner against accent fallback
                         const computedAccent = getComputedStyle(document.documentElement).getPropertyValue('--accent-bg') || '#111827';
                         banner.style.color = getContrastColor(computedAccent);
                     }
                 }
-            }).catch(()=>{});
+            });
         }
 
         function toggleFavorite(gameId) {
@@ -1455,8 +1905,6 @@
                 state.favorites.push(gameId);
             }
             localStorage.setItem('centauri_favorites', JSON.stringify(state.favorites));
-            
-            // Re-render to update the heart icons on screen
             renderContent();
         }
 
@@ -1498,3 +1946,4 @@
     </script>
 </body>
 </html>
+
