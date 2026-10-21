@@ -1,2 +1,1 @@
-beta 1 v1.03 : updated game links from 1ucent.github.io to centaurrii.com to combat blockers, known issues : setup music doesn't play, app icons are inaccurate
-
+gamma v1 - runs HORRIBLY on chrome os. that's all we know!
