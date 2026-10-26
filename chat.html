@@ -1,68 +1,296 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <title>Global Chat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; }
-    #messages { height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
-    .msg { margin: 4px 0; }
-    .msg b { color: #0066cc; }
-    form { display: flex; gap: 8px; }
-    input[type=text] { flex: 1; padding: 8px; }
-    button { padding: 8px 16px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      background: #1a1d2e;
+      border-bottom: 1px solid #2a2d3e;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .header-logo {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 16px; color: #fff;
+    }
+    .header-title { font-size: 18px; font-weight: 600; }
+    .header-subtitle { font-size: 12px; color: #64748b; margin-top: 2px; }
+    .status {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; color: #94a3b8;
+    }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #ef4444;
+      transition: background 0.3s;
+    }
+    .status-dot.connected { background: #22c55e; }
+
+    /* Messages */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scroll-behavior: smooth;
+    }
+    .messages::-webkit-scrollbar { width: 6px; }
+    .messages::-webkit-scrollbar-track { background: transparent; }
+    .messages::-webkit-scrollbar-thumb { background: #2a2d3e; border-radius: 3px; }
+
+    .msg-row {
+      display: flex;
+      gap: 12px;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .avatar {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 600; font-size: 14px; color: #fff;
+      flex-shrink: 0;
+    }
+
+    .msg-content {
+      background: #1e2235;
+      border: 1px solid #2a2d3e;
+      border-radius: 12px;
+      padding: 10px 16px;
+      max-width: 70%;
+    }
+    .msg-header {
+      display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px;
+    }
+    .msg-name { font-weight: 600; font-size: 14px; }
+    .msg-time { font-size: 11px; color: #475569; }
+    .msg-text { font-size: 14px; line-height: 1.5; word-break: break-word; }
+
+    .empty-state {
+      text-align: center; color: #475569; padding: 60px 20px;
+      font-size: 14px;
+    }
+    .empty-state svg { margin-bottom: 12px; opacity: 0.4; }
+
+    /* Input */
+    .input-area {
+      background: #1a1d2e;
+      border-top: 1px solid #2a2d3e;
+      padding: 16px 24px;
+    }
+    .input-row {
+      display: flex; gap: 12px; align-items: center;
+    }
+    .name-input {
+      background: #0f1117;
+      border: 1px solid #2a2d3e;
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      width: 140px;
+      transition: border-color 0.2s;
+    }
+    .name-input:focus { outline: none; border-color: #6366f1; }
+    .msg-input {
+      flex: 1;
+      background: #0f1117;
+      border: 1px solid #2a2d3e;
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+    .msg-input:focus { outline: none; border-color: #6366f1; }
+    .send-btn {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: none;
+      border-radius: 10px;
+      padding: 12px 20px;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+    .send-btn:hover { opacity: 0.9; }
+    .send-btn:active { transform: scale(0.96); }
+    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .header { padding: 12px 16px; }
+      .messages { padding: 16px; }
+      .input-area { padding: 12px 16px; }
+      .name-input { width: 100px; }
+      .msg-content { max-width: 85%; }
+    }
   </style>
 </head>
 <body>
-  <h2>Global Chat</h2>
-  <p><label>Name: <input type="text" id="name" placeholder="Your name"></label></p>
-  <div id="messages"></div>
-  <form id="chat-form">
-    <input type="text" id="msg-input" placeholder="Type a message..." autocomplete="off">
-    <button type="submit">Send</button>
-  </form>
+  <div class="header">
+    <div class="header-left">
+      <div class="header-logo">G</div>
+      <div>
+        <div class="header-title">Global Chat</div>
+        <div class="header-subtitle">Real-time, no sign-up</div>
+      </div>
+    </div>
+    <div class="status">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-text">Connecting…</span>
+    </div>
+  </div>
+
+  <div class="messages" id="messages">
+    <div class="empty-state" id="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      <p>No messages yet. Say hello!</p>
+    </div>
+  </div>
+
+  <div class="input-area">
+    <div class="input-row">
+      <input type="text" class="name-input" id="name" placeholder="Your name" maxlength="20">
+      <input type="text" class="msg-input" id="msg-input" placeholder="Type a message…" autocomplete="off">
+      <button class="send-btn" id="send-btn">Send</button>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    const supabase = supabase.createClient(
-      "https://rwqutgkgywrwfxugtyns.supabase.co",
-      "sb_publishable_yDdbcpyCnjQgbeWN1O98Ag_i9iMNNT7"
-    );
+    const COLORS = [
+      '#6366f1','#8b5cf6','#ec4899','#ef4444','#f59e0b',
+      '#10b981','#06b6d4','#3b82f6','#f97316','#14b8a6'
+    ];
 
-    const channel = supabase.channel("global-chat", {
-      config: { broadcast: { self: true } }
-    });
+    function getColor(name) {
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      return COLORS[Math.abs(hash) % COLORS.length];
+    }
 
-    channel.on("broadcast", { event: "message" }, ({ payload }) => {
-      const div = document.createElement("div");
-      div.className = "msg";
-      div.innerHTML = `<b>${escapeHtml(payload.name)}:</b> ${escapeHtml(payload.text)}`;
-      const box = document.getElementById("messages");
-      box.appendChild(div);
-      box.scrollTop = box.scrollHeight;
-    }).subscribe();
+    function getInitials(name) {
+      return name.trim().split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    }
 
-    let name = "";
-    document.getElementById("name").addEventListener("change", e => {
-      name = e.target.value || "Anonymous";
-    });
-
-    document.getElementById("chat-form").addEventListener("submit", e => {
-      e.preventDefault();
-      const input = document.getElementById("msg-input");
-      const text = input.value.trim();
-      if (!text) return;
-      channel.send({
-        type: "broadcast",
-        event: "message",
-        payload: { name: name || "Anonymous", text }
-      });
-      input.value = "";
-    });
+    function timeStr() {
+      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
 
     function escapeHtml(str) {
-      const d = document.createElement("div");
+      const d = document.createElement('div');
       d.textContent = str;
       return d.innerHTML;
+    }
+
+    let name = "";
+    let channel = null;
+    const box = document.getElementById('messages');
+    const emptyState = document.getElementById('empty-state');
+
+    document.getElementById('name').addEventListener('change', e => {
+      name = e.target.value.trim() || "Anonymous";
+    });
+
+    document.getElementById('send-btn').addEventListener('click', sendMsg);
+    document.getElementById('msg-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') sendMsg();
+    });
+
+    function sendMsg() {
+      const input = document.getElementById('msg-input');
+      const text = input.value.trim();
+      if (!text) return;
+      if (channel) {
+        channel.send({
+          type: "broadcast",
+          event: "message",
+          payload: { name: name || "Anonymous", text, ts: Date.now() }
+        });
+      }
+      input.value = "";
+      input.focus();
+    }
+
+    function addMessage(sender, text, ts) {
+      if (emptyState) emptyState.remove();
+      const color = getColor(sender);
+      const time = ts ? new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : timeStr();
+      const row = document.createElement('div');
+      row.className = 'msg-row';
+      row.innerHTML = `
+        <div class="avatar" style="background:${color}">${getInitials(sender)}</div>
+        <div class="msg-content">
+          <div class="msg-header">
+            <span class="msg-name" style="color:${color}">${escapeHtml(sender)}</span>
+            <span class="msg-time">${time}</span>
+          </div>
+          <div class="msg-text">${escapeHtml(text)}</div>
+        </div>
+      `;
+      box.appendChild(row);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    // Connect
+    try {
+      const sb = supabase.createClient(
+        "https://rwqutgkgywrwfxugtyns.supabase.co",
+        "sb_publishable_yDdbcpyCnjQgbeWN1O98Ag_i9iMNNT7"
+      );
+
+      channel = supabase.channel("global-chat", {
+        config: { broadcast: { self: true } }
+      });
+
+      channel.on("broadcast", { event: "message" }, ({ payload }) => {
+        addMessage(payload.name, payload.text, payload.ts);
+      }).subscribe(status => {
+        const dot = document.getElementById('status-dot');
+        const txt = document.getElementById('status-text');
+        if (status === 'SUBSCRIBED') {
+          dot.classList.add('connected');
+          txt.textContent = 'Connected';
+        } else {
+          txt.textContent = 'Connecting…';
+        }
+      });
+    } catch (err) {
+      console.error(err);
+      document.getElementById('status-text').textContent = 'Error';
     }
   </script>
 </body>
